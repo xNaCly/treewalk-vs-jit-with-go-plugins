@@ -1,0 +1,26 @@
+\input{config.tex}
+
+\title{Comparing Tree-walk Interpreters, Bytecode VMs and JIT compilation with embedding via Go-plugins \\[1\baselineskip] \small{Evaluating the trade-offs of using the Go-plugin API for JIT compilation while comparing the approach with common language evaluation patterns.}}
+\author{9525469}
+
+\begin{document}
+    \pagenumbering{Roman}
+    \maketitle
+    \tableofcontents
+
+    \include{chapters/00_Abstract}
+
+    \pagenumbering{arabic}
+
+    \include{chapters/01_Introduction}
+    \include{chapters/02_Examplary-Language}
+    \include{chapters/03_Go-Compiler-Invokation}
+    \include{chapters/04_Go-plugin-api}
+    \include{chapters/05_Benchmarks}
+    \include{chapters/06_Conclusion}
+
+    \pagenumbering{Roman}
+
+    \printbibliography
+\end{document}
+

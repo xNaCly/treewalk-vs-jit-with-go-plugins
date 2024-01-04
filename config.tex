@@ -1,0 +1,33 @@
+\documentclass[12pt, a4paper, parskip=half]{scrreport}
+
+% Font: Helvetica
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\usepackage{amsmath}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage[
+    backend=biber,
+    sorting=none,
+    dashed=false,
+    minnames=4,
+    maxnames=5,
+    style=ieee,
+    ]{biblatex}
+\addbibresource{sources.bib}
+\usepackage[margin=2.5cm, foot=1cm]{geometry}
+\usepackage[hidelinks=false]{hyperref}
+\usepackage[chapter]{minted}
+\usemintedstyle{perldoc}
+\usepackage{float}
+\usepackage{graphicx}
+
+\setlength{\parindent}{0cm}
+\renewcommand{\sectionautorefname}{Section}
+\renewcommand{\subsectionautorefname}{Section}
+\renewcommand{\subsubsectionautorefname}{Section}
+\providecommand*{\listingautorefname}{Listing}
+
+% Keep more footnotes on the same page
+% before pushing them to the next page
+\interfootnotelinepenalty=10000
