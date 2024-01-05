@@ -34,5 +34,5 @@ type Number struct {
 }
 
 func (n *Number) String() string {
-	return strconv.FormatFloat(n.Value, 'g', -1, 64)
+	return strconv.FormatFloat(n.Value, 'E', -1, 64)
 }

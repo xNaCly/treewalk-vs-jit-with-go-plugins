@@ -55,7 +55,11 @@ func main() {
 			}
 			out = vm.Eval(instructions)
 		case *jit:
-			panic("Not implemented")
+			sym, err := eval.JIT(tree)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			out = sym()
 		default:
 			log.Fatalln("No evaluation strategy supplied")
 		}

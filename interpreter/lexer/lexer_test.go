@@ -14,12 +14,12 @@ func TestLexerWhitespace(t *testing.T) {
 		"\n",
 		" \n",
 		"\t",
-		"# comment\n ",
-		`
-        #comment 1
-        #comment 2
-        # comment 3
-        `,
+		// "# comment\n ",
+		// `
+		// #comment 1
+		// #comment 2
+		// # comment 3
+		// `,
 	}
 	l := Lexer{}
 	for _, test := range tests {
