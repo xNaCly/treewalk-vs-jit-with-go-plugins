@@ -41,6 +41,7 @@ type Instruction struct {
 type Vm struct {
 	constantPool []float64
 	Registers    [registerCount]float64
+	alloc        allocator
 }
 
 func (vm *Vm) makeConstant(value float64) uint8 {
@@ -65,6 +66,7 @@ func (vm *Vm) Eval(instructions []Instruction) float64 {
 			vm.Registers[0] *= -1
 		case STORE:
 			vm.Registers[instruction.Argument] = vm.Registers[0]
+			vm.Registers[0] = 0
 		case LOAD:
 			vm.Registers[0] = vm.constantPool[instruction.Argument]
 		}
@@ -104,14 +106,14 @@ func InspectBytecode(instructions []Instruction) []string {
 }
 
 func BytecodeCompile(vm *Vm, node ast.Node) []Instruction {
-	alloc := allocator{}
+
 	r := make([]Instruction, 0)
 	switch node := node.(type) {
 	case *ast.Binary:
-		r = append(r, BytecodeCompile(vm, node.Left)...)
-		register := alloc.alloc()
-		r = append(r, Instruction{Operator: STORE, Argument: register})
 		r = append(r, BytecodeCompile(vm, node.Right)...)
+		register := vm.alloc.alloc()
+		r = append(r, Instruction{Operator: STORE, Argument: register})
+		r = append(r, BytecodeCompile(vm, node.Left)...)
 		switch node.Token.Type {
 		case tokens.PLUS:
 			r = append(r, Instruction{Operator: ADD, Argument: register})
@@ -122,7 +124,7 @@ func BytecodeCompile(vm *Vm, node ast.Node) []Instruction {
 		case tokens.SLASH:
 			r = append(r, Instruction{Operator: DIVIDE, Argument: register})
 		}
-		alloc.dealloc(register)
+		vm.alloc.dealloc(register)
 	case *ast.Unary:
 		r = append(r, BytecodeCompile(vm, node.Right)...)
 		r = append(r, Instruction{Operator: NEGATE})
