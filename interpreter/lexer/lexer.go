@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"interpreter/tokens"
 	"io"
+	"log"
 	"strings"
 	"unicode"
 )
@@ -33,14 +34,14 @@ func (l *Lexer) makeToken(t tokens.Type) tokens.Token {
 }
 
 func (l *Lexer) skipWhitespace() {
-	if l.cc == '#' {
-		for l.cc != '\n' && l.cc != 0 {
-			l.advance()
-		}
-		if l.cc == '\n' {
-			l.advance()
-		}
-	}
+	// TODO: implement comments
+
+	// if l.cc == '#' {
+	// 	for l.cc != '\n' && l.cc != 0 {
+	// 		l.advance()
+	// 	}
+	// }
+
 	for unicode.IsSpace(l.cc) && l.cc != 0 {
 		l.advance()
 	}
@@ -66,12 +67,14 @@ func (l *Lexer) number() tokens.Token {
 		l.advance()
 	}
 	return tokens.Token{
-		Raw:  builder.String(),
-		Type: tokens.NUMBER,
+		Raw:    builder.String(),
+		Type:   tokens.NUMBER,
+		Line:   l.line,
+		Column: l.column - builder.Len(),
 	}
 }
 
-func (l *Lexer) NextToken() tokens.Token {
+func (l *Lexer) Next() tokens.Token {
 	l.skipWhitespace()
 
 	token := tokens.Token{Type: tokens.UNKNOWN}
@@ -87,11 +90,18 @@ func (l *Lexer) NextToken() tokens.Token {
 		token = l.makeToken(tokens.ASTERIKS)
 	case '/':
 		token = l.makeToken(tokens.SLASH)
+	case '(':
+		token = l.makeToken(tokens.BRACE_LEFT)
+	case ')':
+		token = l.makeToken(tokens.BRACE_RIGHT)
 	default:
 		if '0' <= l.cc && l.cc <= '9' {
-			token = l.number()
+			return l.number()
 		}
+	}
 
+	if token.Type == tokens.UNKNOWN {
+		log.Panicf("UNKNOWN TOKEN for char %c", l.cc)
 	}
 
 	l.advance()
