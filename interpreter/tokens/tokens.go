@@ -7,7 +7,7 @@ type Token struct {
 	Column int
 }
 
-type Type byte
+type Type uint8
 
 const (
 	UNKNOWN Type = iota
