@@ -7,6 +7,6 @@
 - [x] Lexer
 - [x] Parser
 - [x] Ast walk eval
-- [ ] Bytecode vm
-- [ ] Bytecode compiler
-- [ ] JIT compiler
+- [x] Bytecode vm
+- [x] Bytecode compiler
+- [x] JIT compiler
