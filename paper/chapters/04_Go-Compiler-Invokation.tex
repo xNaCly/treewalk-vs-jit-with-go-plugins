@@ -1,4 +1,47 @@
-\chapter{Compiler Invokation}
+\chapter{Compiler Invocation}
+
+The method of invoking the compiler tool-chain has significant effects on the
+startup performance, the robustness and the complexity of the JIT compiler.
+This chapter highlights two possible approaches for invoking the compiler
+tool-chain. 
 
 \section{Including the Compiler Source Code}
+
+The first idea of invoking the compiler tool-chain, is to include the source
+code of the compiler as a library and simply start it while passing in the
+generated go code. This does not require the compiler tool-chain to exist on
+the target system and omits the overhead of starting the compiler process.
+However this approach can not be used for the source code since the go compiler
+is not stable nor accessible outside of the go compiler tool-chain
+\cite[\textit{(gcToolchain).gc}]{gc_source} due to the usage of
+\texttt{internal} packages \cite{go_internal_dir}.
+
 \section{Invoking the local Go Compiler}
+
+The remaining method is to start the locally available compiler tool-chain via
+\ the \texttt{exec.Cmd} interface \cite[Overview]{go_os_exec}. This enables
+requesting the operating system to invoke the compiler. Approaching the problem
+with this method has the downside of requiring the compiler to exist on the
+target system, the overhead of tasking the operating system with starting the
+compiler, writing the generated code to a temporary file and compiling this
+temporary file instead of doing all of the aforementioned inside of the JIT by
+including the compiler as a library as introduced before.
+
+\autoref{code:compiler_invocation} shows a simplified implementation of a
+function invoking the go compiler. Error handling is omitted for sake of
+simplicity.
+
+\begin{listing}[H]
+    \begin{minted}{go}
+func invokeCompiler(code string) {
+    f, _ := os.CreateTemp(".", "jit_*.go")
+    defer os.Remove(f)
+    f.WriteString(code)
+    c := exec.Command("go", "build", f.Name())
+    c.Run()
+}
+    \end{minted}
+    \caption{Simplified tool-chain invocation}
+    \label{code:compiler_invocation}
+\end{listing}
+
