@@ -1,4 +1,97 @@
 \chapter{Plugin API}
+
+The \texttt{plugin} package enables the loading of shared objects compiled with
+the \newline \texttt{-buildmode=plugin} compiler flag and the resolution of
+symbols contained in the plugin \cite[Overview]{go_plugin}. This allows the
+compilation and loading of go code while running a program.
+
 \section{Compiling Go Source Code to Go plugins}
+
+As introduced above the compiler tool-chain accepts different build modes via
+the \texttt{-buildmode} command line argument \cite{go_build_mode}. The build
+mode for compiling a given source file to the go plugin format is named
+\texttt{plugin} \cite{go_build_mode} \cite[Overview]{go_plugin}.
+
+\autoref{code:compiler_invocation_plugin} contains a modified version of
+\autoref{code:compiler_invocation}, adding the compiler flags for compiling the
+generated source code passed via the \texttt{code} function parameter, to a go
+plugin. Instead of producing an executable for the target architecture and
+operating system the compiler now generates a shared object in the format the
+\texttt{plugin} package requires.
+
+\begin{listing}[H]
+    \begin{minted}{go}
+func invokeCompiler(code string) {
+    f, _ := os.CreateTemp(".", "jit_*.go")
+    defer os.Remove(f)
+    f.WriteString(code)
+    pre := strings.TrimSuffix(f.Name(), ".go")
+    c := exec.Command(
+        "go", "build", "-buildmode=plugin", "-o", pre, f.Name())
+    c.Run()
+}
+    \end{minted}
+    \caption{Tool-chain invocation with plugin compilation}
+    \label{code:compiler_invocation_plugin}
+\end{listing}
+
 \section{Embedding Go plugins}
-\section{Trade-offs}
+
+The loading of plugins and the resolution of plugins uses the API exposed by
+the previously introduced \texttt{plugin} package.
+
+\autoref{code:compiler_invocation_plugin_open} modifies
+\autoref{code:compiler_invocation_plugin} for opening the previously compiled
+plugin. Once opened the \mintinline{go}{*plugin.Plugin} structure can be used
+for resolving exported functions and variables included in the plugin. After
+resolving a symbol\footnote{a symbol refers to a function, constant or
+variable} its type is \mintinline{go}{any}, therefore the function
+\mintinline{go}{Main}\footnote{for the sake of this explanation the generated
+code in the function parameter \texttt{code} is assumed to be contained in the
+\mintinline{go}{Main} function} has to be cast to \mintinline{go}{func()}
+before the go type system allows a function call. Upon type casting the
+function is called and the generation, compilation and calling workflow of the
+JIT compiler is concluded.
+
+\begin{listing}[H]
+    \begin{minted}{go}
+func invokeCompiler(code string) {
+    f, _ := os.CreateTemp(".", "jit_*.go")
+    defer os.Remove(f)
+    f.WriteString(code)
+    pre := strings.TrimSuffix(f.Name(), ".go")
+    c := exec.Command(
+        "go", "build", "-buildmode=plugin", "-o", pre, f.Name())
+    c.Run()
+
+    plug, _ := plugin.Open(pre)
+    // assumes generated code lives in func Main()
+    symbol, _ := plug.Lookup("Main")
+    Main, _ := symbol.(func())
+    Main()
+}
+    \end{minted}
+    \caption{Plugin compilation, plugin opening and function resolution}
+    \label{code:compiler_invocation_plugin_open}
+\end{listing}
+
+\section{Trade-offs, Issues and Considerations}
+
+The \texttt{plugin} package provides the program with the unique ability to
+allow for high performance on the fly code compilation and execution. It
+therefore fits the use case of a query language implementation well.
+
+However the \texttt{plugin} package bears several downsides
+\cite[Warnings]{go_plugin}, primarily the missing portability due to the
+package only supporting Linux, FreeBSD and MacOS. Another disadvantage is the
+strict requirement of both the host application and all plugins needing to be
+compiled with the same tool-chain version and build-tags - this is particularly
+difficult in the case of this JIT, due to the requirement of the existence of
+the local compiler that will most certainly not be of the exact same version as
+the compiler used for compiling the host application. Is the previously
+mentioned not strictly ensured runtime errors can occur. A further drawback is
+the increased difficulty of reasoning about program and plugin initialisation
+for the special \mintinline{go}{func init()} function is called upon opening a
+plugin \cite[Overview]{go_plugin}, possibly opening the program up to race
+conditions and similar critical bugs due to global state initialisation
+\cite[The init function]{go_effective}.
