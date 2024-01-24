@@ -18,11 +18,28 @@ time compiler: compiling methods on demand while a program is running \cite[1.
 Introduction]{java_jit_compilation}}\cite{postgres_jit}.
 
 There are several optimisations applicable for any programming language and
-query languages in particular. Some were already applied to the query language
-\cite{parser2_opt}. Implementing a JIT compiler can significantly improve the
-performance of a long running highly processing intensive program and allows it
-to outperform optimisations applied to the AST before walking it or compiling
-to bytecode instructions and executing them in a dedicated virtual machine
-\cite[4. Results]{java_jit_compilation}. To evaluate whether the expensive
-startup time is rewarding the query language runtime with higher performance
-will be tested as part of this paper.
+query languages in particular \cite[3.3 Optimisations]{java_jit_region_based}.
+Some were already applied to the query language \cite{parser2_opt}.
+Implementing a JIT compiler can significantly improve the performance of a long
+running highly processing intensive program and allows it to outperform
+optimisations applied to the AST before walking it or compiling to bytecode
+instructions and executing them in a dedicated virtual machine \cite[4.
+Results]{java_jit_compilation}. 
+
+The implementation of a JIT compiler introduces complexity into the codebase
+for the generation of optimized assembly is inherently complex and time
+consuming \cite[1. Introduction]{impl_jit} while also opening the door for
+potential attacks \cite[2. Challenges Securing JavaScript JIT]{js_jit_fuzzing}
+\cite[Table 1.]{js_jit_fuzzing}. Another issue is the platform dependence, a
+JIT compiler has to generate native code for all platforms and operating
+systems the database and therefore the query language support - increasing
+complexity and maintenance \cite[Abstract]{java_jit_effectiveness}. Furthermore
+a JIT compiler significantly increases the memory usage \cite[Fig.
+1.]{brief_history_of_jit} of the interpreter as well as requiring a not to be
+disregarded startup time made up of the time to start the JIT compiler and the
+time to compile the language constructs to machine code. \cite[4.2.7 Breakdown
+of compilation times]{java_jit_effectiveness}.
+
+To evaluate whether the aforementioned positive aspects outweigh the negative
+points and a JIT therefore does improve the query languages performance,
+determines the scope of this paper.

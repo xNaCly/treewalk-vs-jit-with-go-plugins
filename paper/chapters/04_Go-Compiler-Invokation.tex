@@ -1,5 +1,12 @@
 \chapter{Compiler Invocation}
 
+Instead of manually generating optimized assembly for each function to be
+compiled on the fly, the go compiler toolchain is invoked and receives the
+previously  generated Go source code that was computed from the query languages
+AST. This omits the complexity of implementing and maintaining several platform
+specific machine code generator compiler backends while allowing the JIT
+compiler to support all platforms supported by the go toolchain.
+
 The method of invoking the compiler tool-chain has significant effects on the
 startup performance, the robustness and the complexity of the JIT compiler.
 This chapter highlights two possible approaches for invoking the compiler

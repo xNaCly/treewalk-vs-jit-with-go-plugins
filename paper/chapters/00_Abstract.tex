@@ -11,4 +11,18 @@
     accessing the Go compiler, working with the Go plugin API and highlights
     several benchmarks comparing the performance of the new JIT compiler and
     the previous language evaluation implementation.
+
+    Das Ziel dieser Arbeit besteht darin zu evaluieren ob sich das Einsetzen
+    der Go plugin API für die JIT Kompilation einer Abfragesprache einer
+    effizienten Datenbank, die ihre Daten ausschließlich im Arbeitsspeicher
+    ablegt, rentiert. Diese Abwägung basiert auf den Kriterien der
+    Verwendbarkeit, Effizienz und der Stabilität der angewendeten Lösung. Um
+    den Vergleich unter realistischen Bedingungen zu testen wird vorerst die
+    Abfragesprache sowie einige umfangreicher werdende Beispiele vorgestellt.
+    Diese Abfragen werden dann per Hand zum Go code kompiliert den der JIT
+    erzeugt hätte, dieses Ergebnis wird dann gegen die derzeitige
+    Implementierung die das Evaluieren mit einem Tree-walk Interpreter umsetzt,
+    verglichen. Auch werden unterschiedliche Art und Weisen des Aufrufes des Go
+    compiler, die Verwendung des Go plugin paketes und Tests auf die Effizienz
+    des neuen JIT und des alten Tree-walk Interpreter vorgestellt.
 \end{abstract}
