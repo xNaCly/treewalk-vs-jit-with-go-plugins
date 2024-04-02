@@ -1,6 +1,47 @@
 \chapter{Query Language}
 
+The query language is generic by design and by usage of the newly introduced
+generic \cite{go_generic_proposal}. This allows for rudimentary and complex
+language variations depending on the data type the desired language is created
+with. This allows for a complexity ranging from boolean algebra, over
+arithmetic operations to complex queries on lists of objects, such as filtering
+for values, mapping and mutating elements of the list and iterating over the
+entries of the list.
+
+\begin{listing}[H]
+    \begin{minted}{bash}
+true | false
+a & !b
+let c=true;
+if c then 
+    a&b 
+else 
+    a|b
+    \end{minted}
+    \caption{Boolean algebra}
+    \label{code:language-example-boolean}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{go}
+var boolParser = funcGen.New[bool]()
+    .AddConstant("false", false)
+    .AddConstant("true", true)
+    .AddSimpleOp("^", true, 
+            func(a, b bool) (bool, error) { return a != b, nil })
+    .AddSimpleOp("=", true, 
+            func(a, b bool) (bool, error) { return a == b, nil })
+    .AddSimpleOp("|", true, 
+            func(a, b bool) (bool, error) { return a || b, nil })
+    .AddSimpleOp("&", true, 
+            func(a, b bool) (bool, error) { return a && b, nil })
+    .AddUnary("!", func(a bool) (bool, error) { return !a, nil })
+    .SetToBool(func(c bool) (bool, bool) { return c, true })
+    \end{minted}
+    \caption{Generating boolean algebra}
+    \label{code:language-example-boolean-gen}
+\end{listing}
+
 \section{Feature set}
 
 \section{Evaluation Approach}
-
