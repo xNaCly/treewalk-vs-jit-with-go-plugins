@@ -1,3 +1,46 @@
 \chapter{Benchmarks}
-\section{Tree-Walk interpreter}
+
+% TODO: convert to full text
+% =============================================================
+\begin{itemize}
+    \item jit will use and produce handwritten non optimized go code the jit compiler would generate
+    \item benchmarks will be done by three examples:
+    \begin{itemize}
+        \item a arithmetics heavy leetcode problem
+        \item a string concatenating heavy problem
+        \item an object and array index heavy problem, which will be the most realistic
+    \end{itemize}
+\end{itemize}
+% =============================================================
+
+\section{Examples}
+
+\subsection{Arithmetics}
+\subsection{String operations}
+\subsection{Object and Array Index}
+
+\section{Considerations}
+
+Benchmark results may be subject to various influences, including the workload
+on the system conducting the benchmarks, insufficiently sized data sets for
+comprehensive and accurate testing, as well as comparing inherently dissimilar
+benchmarks. Most of the aforementioned can be mitigated by using the
+\texttt{testing} package included in the go programming languages standard
+library \cite{go_testing}. 
+
+To avoid the influences of the current workload of the system the tests are
+performed many times, therefore accounting for statistical outliers and
+external system influences on the test, which furthermore accounts for the
+possibility of choosing insufficiently sized data sets.
+
+By benchmarking the execution of the same given input with the JIT-compiler
+enabled and with the JIT-compiler disabled an inherently comparable data set is
+created due to the shared purpose of evaluating the runtime performance under
+differing runtime configurations. Therefore, conducting benchmarks under the
+two previously mentioned configurations and comparing the results is a valid
+evaluation of the two benchmarks.
+
+
+\section{Tree-Walk interpreter} 
+
 \section{Go just-in-time compiler}
