@@ -1,11 +1,13 @@
 \chapter{Query Language}
 
 The query language is generic by design and by usage of the newly introduced
-generic \cite{go_generic_proposal}. This allows for rudimentary and complex
-language variations depending on the data type the desired language is created
-with. This allows for a complexity ranging from boolean algebra, over
-arithmetic operations to complex queries on lists of objects, such as filtering
-for values, mapping and mutating elements of the list and iterating over the
+generic proposal \cite{go_generic_proposal}. This allows for rudimentary and
+complex language variations depending on the data type the desired language is
+created with. Such as complexity ranging from boolean algebra (see
+\autoref{code:language-example-boolean} and its corresponding language
+definition \autoref{code:language-example-boolean-gen}), over arithmetic
+operations to complex queries on lists of objects, such as filtering for
+values, mapping and mutating elements of the list and iterating over the
 entries of the list.
 
 \begin{listing}[H]
@@ -44,4 +46,21 @@ var boolParser = funcGen.New[bool]()
 
 \section{Feature set}
 
+To limit the scope of performance evaluation, the feature set is determined as
+the  language definition and dialect\footnote{Refers to the usage of
+\cite{parser2_xnacly} to define and generate a language for a specific data
+type, with static global functions and constant values}, specified in the
+\texttt{value} package of the \texttt{parser2} \cite[\texttt{value}
+package]{parser2_xnacly} project. This dialect allows for aggregation,
+filtering and mutating large lists of data sets consisting of objects with many
+key value pairs.
+
+% TODO: show example with persons, show streaming, explain usage
+
 \section{Evaluation Approach}
+
+% TODO: explain:
+% - ast walker
+% - performs optimisations such as consts eval, etc
+% - generates functions from the AST, equates to a simple ast walker
+
