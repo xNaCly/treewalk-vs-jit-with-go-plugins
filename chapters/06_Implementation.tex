@@ -1,6 +1,38 @@
 \chapter{Just in Time Compilation}
-\section{Meta tracing}
-\section{\texttt{JIT\_CONSTANT}}
-\section{Function parameters}
-\section{Reducing compiler invocations}
+
+Just in time compilation refers to the process of determining whether a
+segregated chunk of code is considered ``hot''\footnote{hot in the context of
+just in time compilation refers to a code path or a segment of code that is
+executed massive amount of times \cite{jvm_ibm_optlevel, jvm_efficient}} and
+compiling this code segment into operating system and architecture specific
+machine code. This machine code is then loaded into the memory of the
+interpreters runtime and executed instead of interpreting the code chunk
+\cite{jvm_efficient}. The details of just in time compilation, meta tracing,
+categorizing code segments as ``hot'', improving the performance of the just in
+time compiler and error handling are explored in this chapter.
+
+Contrary to the previously introduced definition of a just in time
+compiler in the context of programming language interpreters, go does
+not support dynamically loading machine code into memory and executing
+these chunks. The mitigation for this is introduced and explained in
+\autoref{chapter:plugin-api}.
+
+\section{Meta Tracing \& \texttt{JIT\_CONSTANT}}
+
+% TODO: cite a source for the explanation
+% TODO: explain meta tracing
+% TODO: explain jit constant and why 1k was choosen
+
+\section{Function Parameters}
+
+% TODO: the issue with parameter types and parameter amounts that can be 0, 1 or more
+
+\section{Reducing Compiler Invocations}
+
+% TODO: invoking the go compiler for every function to compile is slow as fuck
+
 \section{Bailing out to the Interpreter}
+
+% TODO: errors in the jit compile stage should not stop the execution of the
+% interpreter, if an error is encountered the jit simply lets the interpreter
+% do its work and skips the compilation of the specific function 

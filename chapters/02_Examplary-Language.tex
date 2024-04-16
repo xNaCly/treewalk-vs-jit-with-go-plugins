@@ -45,6 +45,7 @@ var boolParser = funcGen.New[bool]()
 \end{listing}
 
 \section{Feature set}
+\label{sec:feature-set}
 
 To limit the scope of performance evaluation, the feature set is determined as
 the  language definition and dialect\footnote{Refers to the usage of
@@ -61,7 +62,7 @@ persons
     .map(p -> p.Name)
     .reduce((a,b)->a+", "+b)
     \end{minted}
-    \caption{Reducing and formatting objects in lists}
+    \caption{Reducing and formatting objects in lists - source \cite{parser2_xnacly}}
     \label{code:reduce-and-format}
 \end{listing}
 
@@ -98,7 +99,7 @@ The just in time compiler targets named functions and anonyoums functions (see
 compile their contents when conditions for their compilation are hit.
 
 
-\section{Evaluation Approach}
+\section{Current Evaluation Approach}
 
 % TODO: explain:
 % - ast walker
