@@ -55,7 +55,48 @@ package]{parser2_xnacly} project. This dialect allows for aggregation,
 filtering and mutating large lists of data sets consisting of objects with many
 key value pairs.
 
-% TODO: show example with persons, show streaming, explain usage
+\begin{listing}[H]
+    \begin{minted}{kotlin}
+persons
+    .map(p -> p.Name)
+    .reduce((a,b)->a+", "+b)
+    \end{minted}
+    \caption{Reducing and formatting objects in lists}
+    \label{code:reduce-and-format}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{kotlin}
+persons
+  .accept(p->p.PlaceOfBirth="New York" & p.Age>21)
+  .map(e->e.Name+": "+e.Age)
+  .reduce((a,b)->a+", "+b)
+    \end{minted}
+    \caption{Applying filter, mapping, join entries with comma - source \cite{parser2_xnacly}}
+    \label{code:filter-and-format}
+\end{listing}
+
+
+\autoref{code:reduce-and-format} and \autoref{code:filter-and-format} access
+the global \texttt{person} constant using the dialect specific facilities for
+creating a list of objects of type \mintinline{go}{Person} as global state (see
+\autoref{code:go-to-language-interop}).
+
+\begin{listing}[H]
+    \begin{minted}{kotlin}
+func namedFunction(argument) argument+2;
+let m = (argument) -> argument+2;
+let add = (a,b) -> a+b;
+    \end{minted}
+    \caption{Named Functions and unnamed/anonyoums functions - source \cite{parser2_xnacly}}
+    \label{code:named-functions-and-unnamed-functions}
+\end{listing}
+
+
+The just in time compiler targets named functions and anonyoums functions (see
+\autoref{code:named-functions-and-unnamed-functions}) and will attempt to
+compile their contents when conditions for their compilation are hit.
+
 
 \section{Evaluation Approach}
 

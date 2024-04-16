@@ -1,0 +1,26 @@
+\chapter{Appendix}
+
+\begin{listing}[H]
+    \begin{minted}{go}
+type Person struct {
+	Name         string
+	Surname      string
+	PlaceOfBirth string
+	Age          int
+}
+
+var Persons = []Person{
+	{"John", "Doe", "London", 23},
+	{"Jane", "Doe", "London", 25},
+	{"Bob", "Smith", "New York", 21},
+	{"Frank", "Muller", "New York", 22},
+	{"Mary", "Green", "Seattle", 21},
+	{"Jake", "Muller", "Washington", 22},
+}
+
+var PersonToMap = value.NewToMapReflection[Person]()
+var persons = value.NewListOfMaps[Person](PersonToMap, Persons)
+    \end{minted}
+    \caption{Passing Go values into the language context - source \cite{parser2_xnacly}}
+    \label{code:go-to-language-interop}
+\end{listing}
