@@ -11,7 +11,7 @@ values, mapping and mutating elements of the list and iterating over the
 entries of the list.
 
 \begin{listing}[H]
-    \begin{minted}{bash}
+   \begin{minted}{bash}
 true | false
 a & !b
 let c=true;
@@ -60,7 +60,7 @@ key value pairs.
     \begin{minted}{kotlin}
 persons
     .map(p -> p.Name)
-    .reduce((a,b)->a+", "+b)
+    .reduce((a,b) -> a+", "+b)
     \end{minted}
     \caption{Reducing and formatting objects in lists - source \cite{parser2_xnacly}}
     \label{code:reduce-and-format}
@@ -69,9 +69,9 @@ persons
 \begin{listing}[H]
     \begin{minted}{kotlin}
 persons
-  .accept(p->p.PlaceOfBirth="New York" & p.Age>21)
-  .map(e->e.Name+": "+e.Age)
-  .reduce((a,b)->a+", "+b)
+  .accept(p -> p.PlaceOfBirth="New York" & p.Age>21)
+  .map(e -> e.Name+": "+e.Age)
+  .reduce((a,b) -> a+", "+b)
     \end{minted}
     \caption{Applying filter, mapping, join entries with comma - source \cite{parser2_xnacly}}
     \label{code:filter-and-format}
