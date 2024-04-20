@@ -17,7 +17,44 @@ not support dynamically loading machine code into memory and executing
 these chunks. The mitigation for this is introduced and explained in
 \autoref{chapter:plugin-api}.
 
-\section{Meta Tracing \& \texttt{JIT\_CONSTANT}}
+\section{Meta-tracing \& \texttt{JIT\_CONSTANT}}
+
+\begin{listing}[H]
+    \begin{minted}{go}
+// Function represents a function in the interpreter runtime
+type Function[V any] struct {
+    // ...
+
+    // Counter stores the amount of calls made to the function
+    Counter int
+}
+    \end{minted}
+    \caption{\mintinline{go}{Function[V any] struct} type with meta-tracing}
+    \label{code:meta-tracing-counter}
+\end{listing}
+
+Meta-tracing refers to the process of tracking the actions of the programming
+language interpreter \cite[4.1 Meta-tracing]{bolz2015impact}. The interpreter
+uses this functionality to determine the amount of invocations of a function
+and updates the \mintinline{go}{Function.Counter} field accordingly, see
+\autoref{code:meta-tracing-counter}. Once this counter reaches the threshold
+defined in the \texttt{JIT\_CONSTANT} (see \autoref{code:jit-constant}) the
+\mintinline{go}{type Function[V any] struct} instance is passed to the just in
+time compiler compilation queue, in which it will be compiled with other
+functions waiting to be compiled. Upon the Function being compiled the
+interpreter executes the output of the just in time compiler for each function
+invocation instead of walking the abstract syntax tree and thus is no longer
+interpreting the function, but instead uses the compiled representation.
+
+\begin{listing}[H]
+    \begin{minted}{go}
+// JIT_CONSTANT sets the threshold which the function call meta tracing has
+// to pass to be compiled
+var JIT_CONSTANT int = 1000
+    \end{minted}
+    \caption{\texttt{JIT\_CONSTANT} definition}
+    \label{code:jit-constant}
+\end{listing}
 
 % TODO: cite a source for the explanation
 % TODO: explain meta tracing
