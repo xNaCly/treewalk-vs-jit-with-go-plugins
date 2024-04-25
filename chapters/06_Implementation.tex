@@ -48,21 +48,22 @@ interpreting the function, but instead uses the compiled representation.
 
 \begin{listing}[H]
     \begin{minted}{go}
-// JIT_CONSTANT sets the threshold which the function call meta tracing has
-// to pass to be compiled
-var JIT_CONSTANT int = 1000
+// JIT_CONSTANT sets the threshold the function invocation meta tracing counter
+// has to pass for the function to be considered hot and thus compilable
+var JIT_CONSTANT int = 100000
     \end{minted}
     \caption{\texttt{JIT\_CONSTANT} definition}
     \label{code:jit-constant}
 \end{listing}
 
-% TODO: cite a source for the explanation
-% TODO: explain meta tracing
-% TODO: explain jit constant and why 1k was choosen
-
 \section{Function Parameters}
 
 % TODO: the issue with parameter types and parameter amounts that can be 0, 1 or more
+
+\section{Type system clashes}
+
+% TODO: document the struggles with asserting types of arguments + the method
+% of converting generic data into its primitive underlying types and vise versa
 
 \section{Reducing Compiler Invocations}
 
