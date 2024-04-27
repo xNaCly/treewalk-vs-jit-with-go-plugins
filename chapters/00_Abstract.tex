@@ -4,13 +4,13 @@
     for a high performance in memory data storage. This evaluation is done
     based upon the criteria of the ease of usability, performance and the
     robustness of the resulting implementation. For the sake of comparison the
-    query language as well as its features are introduced. The code a JIT
-    would have generated for several heavy queries is handwritten and
-    benchmarked against the same expressions evaluated with the currently
-    employed tree walk interpreter. The paper explores the different
-    possibilities for accessing the Go compiler, working with the Go plugin
-    API and highlights several benchmarks comparing the performance of the new
-    JIT compiler and the previous language evaluation implementation.
+    query language as well as its features are introduced. A just in time
+    compiler is implemented and benchmarked against the same expressions
+    evaluated with the currently employed tree walk interpreter. The paper
+    explores the different possibilities for accessing the Go compiler, working
+    with the Go plugin API and highlights several benchmarks comparing the
+    performance of the new JIT compiler and the previous language evaluation
+    implementation.
 
     Das Ziel dieser Arbeit besteht darin zu evaluieren ob sich das Einsetzen
     der Go plugin API für die JIT Kompilation einer Abfragesprache einer
@@ -19,10 +19,10 @@
     Verwendbarkeit, Effizienz und der Stabilität der angewendeten Lösung. Um
     den Vergleich unter realistischen Bedingungen zu testen wird vorerst die
     Abfragesprache sowie einige umfangreicher werdende Beispiele vorgestellt.
-    Diese Abfragen werden dann per Hand zum Go code kompiliert den der JIT
-    erzeugt hätte, dieses Ergebnis wird dann gegen die derzeitige
-    Implementierung die das Evaluieren mit einem Tree-walk Interpreter umsetzt,
-    verglichen. Auch werden unterschiedliche Art und Weisen des Aufrufes des Go
-    compiler, die Verwendung des Go plugin paketes und Tests auf die Effizienz
-    des neuen JIT und des alten Tree-walk Interpreter vorgestellt.
+    Diese Abfragen werden dann mit Hilfe des JIT compiliert. Das Ergebnis wird
+    dann mit der derzeitige Implementierung die das Evaluieren mit einem
+    Tree-walk Interpreter umsetzt, verglichen. Auch werden unterschiedliche Art
+    und Weisen des Aufrufes des Go compiler, die Verwendung des Go plugin
+    paketes und Tests auf die Effizienz des neuen JIT und des alten Tree-walk
+    Interpreter vorgestellt und diskutiert.
 \end{abstract}

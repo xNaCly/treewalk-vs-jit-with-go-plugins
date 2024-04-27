@@ -1,27 +1,7 @@
 \chapter{Benchmarks}
 
-% TODO: convert to full text
-% =============================================================
-\begin{itemize}
-    \item jit will use and produce handwritten non optimized go code the jit
-        compiler would generate
-    \item benchmarks will be done by three examples:
-    \begin{itemize}
-        \item a arithmetics heavy leetcode problem
-        \item a string concatenating heavy problem
-        \item an object and array index heavy problem, which will be the most
-            realistic
-    \end{itemize}
-\end{itemize}
-% =============================================================
-
-\section{Test inputs}
-
-\subsection{Arithmetics}
-\subsection{String operations}
-\subsection{Object and Array Index}
-
-\section{Considerations}
+The following sections will measure the impact the jit compilation has on
+selected workloads.
 
 Benchmark results may be subject to various influences, including the workload
 on the system conducting the benchmarks, insufficiently sized data sets for
@@ -42,7 +22,16 @@ differing runtime configurations. Therefore, conducting benchmarks under the
 two previously mentioned configurations and comparing the results is a valid
 evaluation of the two benchmarks.
 
+\section{Arithmetics}
+% TODO: a arithmetics heavy leetcode problem
 
-\section{Tree-Walk interpreter} 
+\section{String operations}
+%TODO: a string concatenating heavy problem
 
-\section{Go just-in-time compiler}
+\section{Object and Array Index}
+% TODO: an object and array index heavy problem, which will be the most realistic
+
+\section{Discussing Performance Impact} 
+
+\section{Determining the \texttt{JIT\_CONSTANT}}
+\label{sec:jit-constant-discussion}

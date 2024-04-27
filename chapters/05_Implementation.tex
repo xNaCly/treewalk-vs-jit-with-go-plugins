@@ -5,7 +5,7 @@ segregated chunk of code is considered ``hot''\footnote{hot in the context of
 just in time compilation refers to a code path or a segment of code that is
 executed massive amount of times \cite{jvm_ibm_optlevel, jvm_efficient}} and
 compiling this code segment into operating system and architecture specific
-machine code. This machine code is then loaded into the memory of the
+machine code ad hoc. This machine code is then loaded into the memory of the
 interpreters runtime and executed instead of interpreting the code chunk
 \cite{jvm_efficient}. The details of just in time compilation, meta tracing,
 categorizing code segments as ``hot'', improving the performance of the just in
@@ -56,14 +56,20 @@ var JIT_CONSTANT int = 1_000
     \label{code:jit-constant}
 \end{listing}
 
+This constant threshold varies from compiler to compiler. The value depends on
+the performance needs and the hit the runtime performance takes upon
+invoking the jit compiler. Specifics are discussed in \autoref{sec:jit-constant-discussion}.
+
 The JIT-compiler requires some information about a function before it's being
 able to start the code generation step. Not only does it require the name of
 the function\footnote{Unnamed/anonymous functions or closures are named by
-    prefixing a closure counter with \texttt{c}, the first encountered closure
+prefixing a closure counter with \texttt{c}, the first encountered closure
 will therefore be compiled as \mintinline{go}{func c0()}}, but the names of its
 arguments and the types the JIT can use to compile. The necessary fields are
-stored on the previously introduced \mintinline{go}{type Function[V any] struct},
-see \autoref{code:meta-tracing-meta-data}.
+stored in the previously introduced \mintinline{go}{type Function[V any] struct},
+specifically the \mintinline{go}{type MetaData struct} and
+\mintinline{go}{type MetaDataParameter struct} structures (see
+\autoref{code:meta-tracing-meta-data}).
 
 \begin{listing}[H]
     \begin{minted}{go}
@@ -92,19 +98,18 @@ type Function[V any] struct {
 
 % TODO: explain TypeToString and its usage here
 
-
 \section{Function Parameters}
 
 % TODO: the issue with parameter types and parameter amounts that can be 0, 1 or more
+
+\section{Concurrent Compilation}
+
+% TODO: explain the need for compiling functions concurrently and the means to achive this goal
 
 \section{Type System Clashes}
 
 % TODO: document the struggles with asserting types of arguments + the method
 % of converting generic data into its primitive underlying types and vise versa
-
-\section{Reducing Compiler Invocations}
-
-% TODO: invoking the go compiler for every function to compile is slow as fuck
 
 \section{Bailing out to the Interpreter}
 
