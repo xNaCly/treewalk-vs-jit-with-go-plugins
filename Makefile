@@ -3,8 +3,11 @@ all: biber
 biber: main
 	biber tree-walk-vs-go-jit
 
-main:
+non-silent:
 	pdflatex -shell-escape -jobname=tree-walk-vs-go-jit main 
+
+main:
+	pdflatex -interaction=batchmode -shell-escape -jobname=tree-walk-vs-go-jit main 
 
 clean:
 	rm -fr \

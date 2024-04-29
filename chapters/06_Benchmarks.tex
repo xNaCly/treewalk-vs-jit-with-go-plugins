@@ -23,7 +23,55 @@ two previously mentioned configurations and comparing the results is a valid
 evaluation of the two benchmarks.
 
 \section{Arithmetics}
-% TODO: a arithmetics heavy leetcode problem
+
+Benchmarking the performance of multiple arithmetic operations enables a first
+evaluation of the execution efficiency of the current runtime. All following
+benchmarks simulate a hot path by executing a given operations million times
+and running the benchmarks multiple times (without warmup runs) using the
+command line benchmarking tool \href{lol}{\textit{hyperfine}}.
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{kotlin}
+func b(a)
+    a*a/25*a-12+a/a*a*a*a/25*a-12+a/a*a*a*a/25*a
+    -12+a/a*a*a*a/25*a-12+a/a*a*a*a/25*a-12+a/a*a
+    *a*a/25*a-12+a/a*a*a*a/25*a-12+a/a*a*a*a/25
+    *a-12+a/a*a*a*a/25*a-12+a/a*a*a*a/25*a-12+a/a
+    *a*a*a/25*a-12+a/a*a*a*a/25*a-12+a/a*a;
+let s = list(1_000_000).map(b).sum();
+s
+    \end{minted}
+    \caption{Heavy load arithmetic operations}
+    \label{code:benchmark-arithmetics}
+\end{listing}
+
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            title={Arithmetic operation benchmarks},
+            xlabel={Iterations},
+            ylabel={Mean Execution Time (s)},
+            legend style={at={(0.5,-0.2)},anchor=north},
+            grid style={dotted},
+            major grid style={dotted,black!50},
+            minor grid style={dotted,black!20},
+            nodes near coords,
+            ]
+            
+            \pgfplotstableread[col sep=comma]{benchmarks/arithmetics.csv}\arithmeticBenchmarks
+            \pgfplotstableread[col sep=comma]{benchmarks/arithmeticsJIT.csv}\arithmeticBenchmarksJIT
+
+            \addplot[color=blue,mark=*] table[x=command, y=mean] {\arithmeticBenchmarks};
+            \addplot+[color=red,mark=square*,nodes near coords style={rotate=-45,anchor=north west}] table[x=command, y=mean] {\arithmeticBenchmarksJIT};
+            \legend{JIT Enabled=false, JIT Enabled=true}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Benchmark: Arithmetic operations}
+    \label{chart:arithmetic-one-mio}
+\end{figure}
+
 
 \section{String operations}
 %TODO: a string concatenating heavy problem
