@@ -24,11 +24,12 @@ evaluation of the two benchmarks.
 
 \section{Arithmetics}
 
-Benchmarking the performance of multiple arithmetic operations enables a first
-evaluation of the execution efficiency of the current runtime. All following
-benchmarks simulate a hot path by executing a given operations million times
-and running the benchmarks multiple times (without warmup runs) using the
-command line benchmarking tool \href{lol}{\textit{hyperfine}}.
+Benchmarking the performance of arithmetic operations allows for a first
+execution efficiency evaluation of the language runtime. The benchmark
+simulates a hot path by executing a given operations for a given iteration
+count and running the benchmark itself multiple times using the command line
+benchmarking tool
+\href{https://github.com/sharkdp/hyperfine}{\textit{hyperfine}}.
 
 \begin{listing}[H]
     \begin{minted}[breaklines]{kotlin}
