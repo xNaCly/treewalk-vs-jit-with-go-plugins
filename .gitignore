@@ -17,4 +17,7 @@ _minted-*
 *.synctex(busy)
 *.vrb
 *.pyg
+*.lof
+*.lol
+*.lot
 !tree-walk-vs-go-jit.pdf
