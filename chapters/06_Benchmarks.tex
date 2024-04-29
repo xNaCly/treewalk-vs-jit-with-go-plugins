@@ -39,19 +39,32 @@ func b(a)
     *a*a/25*a-12+a/a*a*a*a/25*a-12+a/a*a*a*a/25
     *a-12+a/a*a*a*a/25*a-12+a/a*a*a*a/25*a-12+a/a
     *a*a*a/25*a-12+a/a*a*a*a/25*a-12+a/a*a;
-let s = list(1_000_000).map(b).sum();
+let s = list(100_000).map(b).sum();
 s
     \end{minted}
     \caption{Heavy load arithmetic operations}
     \label{code:benchmark-arithmetics}
 \end{listing}
 
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|c|c}
+        Iterations & Mean Execution Time & Mean Execution Time (JIT) & $\Delta$ & Improvement \\ 
+        \hline
+        100k & 0.28s & 0.20s & 0.08s & 1.40x \\ 
+        500k & 1.37s & 0.26s & 1.11s & 5.27x \\
+        1mio & 2.73s & 0.34s & 2.39s & 8.03x \\
+        5mio & 13.64s & 0.94 & 12.7s & 14.51x \\
+    \end{tabular}
+    \caption{Arithmetic operations benchmark results }
+\end{table}
+
 
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}
         \begin{axis}[
-            title={Arithmetic operation benchmarks},
+            title={Arithmetic Operations},
             xlabel={Iterations},
             ylabel={Mean Execution Time (s)},
             legend style={at={(0.5,-0.2)},anchor=north},
@@ -71,12 +84,72 @@ s
         \end{axis}
     \end{tikzpicture}
     \caption{Benchmark: Arithmetic operations}
-    \label{chart:arithmetic-one-mio}
+    \label{chart:arithmetic-benchmarks}
 \end{figure}
 
 
 \section{String operations}
-%TODO: a string concatenating heavy problem
+
+Merging strings is an often used language feature, therefore making the need
+for high efficiency evident. This benchmark aims to simulate a real world use
+with heavy load, similar to the benchmark performed before. Both
+\autoref{table:benchmark-string} and its visualisation
+\autoref{chart:benchmark-string} show the performance improvement of at least
+$1.43\textrm{x}$ and at most $4.59\textrm{x}$ - resulting in a mean delta,
+comparing the current runtime and the runtime enhanced with the JIT, of at most
+$11.08\textrm{s}$ and at least $0.10\textrm{s}$.
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{kotlin}
+func b(a)
+    a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a;
+let s = list(100_000).map(e->e.string()).map(b).size();
+s
+    \end{minted}
+    \caption{Heavy load string concatenating}
+    \label{code:benchmark-string}
+\end{listing}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|c|c}
+        Iterations & Mean Execution Time & Mean Execution Time (JIT) & $\Delta$ & Improvement \\ 
+        \hline
+        100k & 0.33s & 0.23s & 0.10s & 1.43x  \\
+        500k & 1.57s & 0.48s & 1.09s & 3.27x  \\ 
+        1mio & 2.99s & 0.77s & 2.22s & 3.89x  \\ 
+        5mio & 14.17s & 3.09s & 11.08s & 4.59x\\ 
+    \end{tabular}
+    \label{table:benchmark-string}
+    \caption{String concatenation benchmark results}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            title={String Concatenating},
+            xlabel={Iterations},
+            ylabel={Mean Execution Time (s)},
+            legend style={at={(0.5,-0.2)},anchor=north},
+            grid style={dotted},
+            major grid style={dotted,black!50},
+            minor grid style={dotted,black!20},
+            nodes near coords,
+            ymin=-3,
+            ]
+            
+            \pgfplotstableread[col sep=comma]{benchmarks/strings.csv}\stringBenchmark
+            \pgfplotstableread[col sep=comma]{benchmarks/stringsJIT.csv}\stringBenchmarkJIT
+
+            \addplot[color=blue,mark=*] table[x=command, y=mean] {\stringBenchmark};
+            \addplot+[color=red,mark=square*,nodes near coords style={rotate=-45,anchor=north west}] table[x=command, y=mean] {\stringBenchmarkJIT};
+            \legend{JIT Enabled=false, JIT Enabled=true}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Benchmark: String concatenating}
+    \label{chart:benchmark-string}
+\end{figure}
 
 \section{Object and Array Index}
 % TODO: an object and array index heavy problem, which will be the most realistic
