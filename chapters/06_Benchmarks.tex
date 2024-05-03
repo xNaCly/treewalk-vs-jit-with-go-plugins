@@ -22,14 +22,13 @@ differing runtime configurations. Therefore, conducting benchmarks under the
 two previously mentioned configurations and comparing the results is a valid
 evaluation of the two benchmarks.
 
-\section{Arithmetics}
-
-Benchmarking the performance of arithmetic operations allows for a first
-execution efficiency evaluation of the language runtime. The benchmark
-simulates a hot path by executing a given operations for a given iteration
-count and running the benchmark itself multiple times using the command line
-benchmarking tool
+The benchmarks simulate a hot path by executing a given operations for a given
+iteration count and running the benchmark itself multiple times using the
+command line benchmarking tool
 \href{https://github.com/sharkdp/hyperfine}{\textit{hyperfine}}.
+
+
+\section{Arithmetics}
 
 \begin{listing}[H]
     \begin{minted}[breaklines]{kotlin}
@@ -46,17 +45,26 @@ s
     \label{code:benchmark-arithmetics}
 \end{listing}
 
+Benchmarking the performance of arithmetic operations allows for a first
+execution efficiency evaluation of the language runtime. The benchmark using
+\autoref{code:benchmark-arithmetics} results of up to $14.51\textrm{x}$
+improvement ($0.94\textrm{s}$ instead of $13.64\textrm{s}$). While the original
+runtime scales linearly and proportionally to the input, the runtime supported
+by the JIT-compiler scales at an almost constant rate, see
+\autoref{chart:arithmetic-benchmarks} and \autoref{table:benchmark-arithmetic}.
+
 \begin{table}[H]
     \centering
     \begin{tabular}{c|c|c|c|c}
         Iterations & Mean Execution Time & Mean Execution Time (JIT) & $\Delta$ & Improvement \\ 
         \hline
-        100k & 0.28s & 0.20s & 0.08s & 1.40x \\ 
-        500k & 1.37s & 0.26s & 1.11s & 5.27x \\
-        1mio & 2.73s & 0.34s & 2.39s & 8.03x \\
-        5mio & 13.64s & 0.94 & 12.7s & 14.51x \\
+        100k & 00.28s & 0.20s & 00.08s & 01.40x \\ 
+        500k & 01.37s & 0.26s & 01.11s & 05.27x \\
+        1mio & 02.73s & 0.34s & 02.39s & 08.03x \\
+        5mio & 13.64s & 0.94s & 12.70s & 14.51x \\
     \end{tabular}
     \caption{Arithmetic operations benchmark results }
+    \label{table:benchmark-arithmetic}
 \end{table}
 
 
@@ -90,15 +98,6 @@ s
 
 \section{String operations}
 
-Merging strings is an often used language feature, therefore making the need
-for high efficiency evident. This benchmark aims to simulate a real world use
-with heavy load, similar to the benchmark performed before. Both
-\autoref{table:benchmark-string} and its visualisation
-\autoref{chart:benchmark-string} show the performance improvement of at least
-$1.43\textrm{x}$ and at most $4.59\textrm{x}$ - resulting in a mean delta,
-comparing the current runtime and the runtime enhanced with the JIT, of at most
-$11.08\textrm{s}$ and at least $0.10\textrm{s}$.
-
 \begin{listing}[H]
     \begin{minted}[breaklines]{kotlin}
 func b(a)
@@ -110,18 +109,27 @@ s
     \label{code:benchmark-string}
 \end{listing}
 
+Merging strings is an often used language feature, therefore making the need
+for high efficiency evident. This benchmark aims to simulate a real world use
+with heavy load, similar to the benchmark performed before. Both
+\autoref{table:benchmark-string} and its visualisation
+\autoref{chart:benchmark-string} show the performance improvement of at least
+$1.43\textrm{x}$ and at most $4.59\textrm{x}$ - resulting in a mean delta,
+comparing the current runtime and the runtime enhanced with the JIT, of at most
+$11.08\textrm{s}$ and at least $0.10\textrm{s}$.
+
 \begin{table}[H]
     \centering
     \begin{tabular}{c|c|c|c|c}
         Iterations & Mean Execution Time & Mean Execution Time (JIT) & $\Delta$ & Improvement \\ 
         \hline
-        100k & 0.33s & 0.23s & 0.10s & 1.43x  \\
-        500k & 1.57s & 0.48s & 1.09s & 3.27x  \\ 
-        1mio & 2.99s & 0.77s & 2.22s & 3.89x  \\ 
+        100k & 00.33s & 0.23s & 00.10s & 1.43x  \\
+        500k & 01.57s & 0.48s & 01.09s & 3.27x  \\ 
+        1mio & 02.99s & 0.77s & 02.22s & 3.89x  \\ 
         5mio & 14.17s & 3.09s & 11.08s & 4.59x\\ 
     \end{tabular}
-    \label{table:benchmark-string}
     \caption{String concatenation benchmark results}
+    \label{table:benchmark-string}
 \end{table}
 
 \begin{figure}[H]
@@ -154,12 +162,84 @@ s
 \section{Real world workloads}
 
 Contrary to the before examined language features, this benchmark focusses on
-common operations performed on large datasets, such as determining the mean,
+common operations performed on large datasets, such as aggregating values,
 reading and overwriting data, chaining list operations and working with lists
-of objects.
+of objects. Due to the mixture of operations featured in this benchmark the
+resulting numbers are a combination of different factors.
 
+The improvements for smaller iterations, such as 100 thousand and 500 thousand,
+can be considered negligible. For the larger iterations the JIT improves the
+performance by at least $0.3\textrm{s}$ ($1.24\textrm{x}$) and at most
+$2.42\textrm{s}$ ($1.431\textrm{x}$).
 
-\section{Discussing Performance Impact} 
+\begin{listing}[H]
+    \begin{minted}[breaklines]{kotlin}
+list(100_000)
+    .filter(e -> e >= 1)
+    .map(e -> ((1024*(1024-e))/(e+1024))+(e*e+e*e-e*e+e*e))
+    .map(e -> {Key: "Number", Value: e})
+    .map(e -> e.Value)
+    .map(e -> e.string().len().string())
+    .map(e -> e+e+e+e+e+e+e)
+    .last()
+    \end{minted}
+    \caption{Real world heavy load benchmark}
+    \label{code:benchmark-realworld}
+\end{listing}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|c|c}
+        Iterations & Mean Execution Time & Mean Execution Time (JIT) & $\Delta$ & Improvement \\ 
+        \hline
+        100k & 0.18s & 0.18s & 0.00s & 0.000x \\
+        500k & 0.87s & 0.82s & 0.05s & 1.024x \\
+        1mio & 1.68s & 1.36s & 0.32s & 1.240x \\
+        5mio & 8.04s & 5.62s & 2.42s & 1.431x\\
+    \end{tabular}
+    \label{table:benchmark-realworld}
+    \caption{String concatenation benchmark results}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            title={Heavy load benchmark},
+            xlabel={Iterations},
+            ylabel={Mean Execution Time (s)},
+            legend style={at={(0.5,-0.2)},anchor=north},
+            grid style={dotted},
+            major grid style={dotted,black!50},
+            minor grid style={dotted,black!20},
+            nodes near coords,
+            ymin=-3,
+            ]
+            
+            \pgfplotstableread[col sep=comma]{benchmarks/real.csv}\realBenchmark
+            \pgfplotstableread[col sep=comma]{benchmarks/realJIT.csv}\realBenchmarkJIT
+
+            \addplot[color=blue,mark=*] table[x=command, y=mean] {\realBenchmark};
+            \addplot+[color=red,mark=square*,nodes near coords style={rotate=-45,anchor=north west}] table[x=command, y=mean] {\realBenchmarkJIT};
+            \legend{JIT Enabled=false, JIT Enabled=true}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Benchmark: Real world heavy load benchmark}
+    \label{chart:benchmark-realworld}
+\end{figure}
+
+\section{Discussing Performance Impact}
+
+Based on the preceding benchmarks, their results and visual representation, the
+performance impact of the JIT-Compiler is substantial for most workloads, but
+especially for larger iterations, such as in hot paths. The Go compiler
+optimises compiled plugins as if it were to compile a Go application, such as
+reducing memory allocations\cite[Escape Analysis]{go_wiki_optimization},
+inlining functions\cite[Inlining]{go_wiki_optimization} and not allocating
+empty structures \cite[Interface Values]{go_wiki_optimization}. This allows the
+interpreter to leverage the optimized performance the Go compiler applies to
+binaries it compiles, thus enabling the observed large performance improvements
+for string manipulation and arithmetic operations.
 
 \section{Determining the \texttt{JIT\_CONSTANT}}
 \label{sec:jit-constant-discussion}

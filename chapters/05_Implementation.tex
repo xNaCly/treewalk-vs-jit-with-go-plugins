@@ -65,10 +65,10 @@ able to start the code generation step. Not only does it require the name of
 the function\footnote{Unnamed/anonymous functions or closures are named by
 prefixing a closure counter with \texttt{c}, the first encountered closure
 will therefore be compiled as \mintinline{go}{func c0()}}, but the names of its
-arguments and the types the JIT can use to compile. The necessary fields are
-stored in the previously introduced \mintinline{go}{type Function[V any] struct},
-specifically the \mintinline{go}{type MetaData struct} and
-\mintinline{go}{type MetaDataParameter struct} structures (see
+arguments and the types the JIT can use to compile the given function. The
+necessary fields are stored in the previously introduced \mintinline{go}{type Function[V any] struct},
+specifically the \mintinline{go}{type MetaData struct}
+and \mintinline{go}{type MetaDataParameter struct} structures (see
 \autoref{code:meta-tracing-meta-data}).
 
 \begin{listing}[H]
@@ -96,13 +96,19 @@ type Function[V any] struct {
     \label{code:meta-tracing-meta-data}
 \end{listing}
 
-\section{Function Parameters}
+\section{Connecting the JIT to the Runtime}
 
-% TODO: the issue with parameter types and parameter amounts that can be 0, 1 or more
+% TODO: introduce JIT, why it holds a context, how its connected to the
+% parser2.Function struct and why it has a channel used as a queue
 
 \section{Concurrent Compilation}
 
 % TODO: explain the need for compiling functions concurrently and the means to achive this goal
+
+\section{Function Parameters and Erasing Types}
+
+% TODO: the issue with parameter types and parameter amounts that can be 0, 1 or more
+
 
 \section{Type System Clashes}
 
@@ -114,3 +120,4 @@ type Function[V any] struct {
 % TODO: errors in the jit compile stage should not stop the execution of the
 % interpreter, if an error is encountered the jit simply lets the interpreter
 % do its work and skips the compilation of the specific function 
+

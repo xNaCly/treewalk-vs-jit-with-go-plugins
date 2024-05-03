@@ -99,10 +99,16 @@ The just in time compiler targets named functions and anonyoums functions (see
 compile their contents when conditions for their compilation are hit.
 
 
-\section{Evaluation Approach}
+\section{Evaluation}
 
-% TODO: explain:
-% - ast walker
-% - performs optimisations such as consts eval, etc
-% - generates functions from the AST, equates to a simple ast walker
+The runtime currently employs the visitor pattern to walk the AST the parser
+generated in the previous step of the stages necessary to transform a given
+character stream to an executable data structure. To evaluate a given input,
+the runtime generates a function once for each tree node it visits. This
+improves the performance rapidly compared to a naive tree-walk-interpreter.
+Furthermore the AST is optimized before being walked by the function generating
+stage of the runtime. 
 
+This evaluation strategy requires the runtime to hold a substantial amount of
+data structures in memory compared to a bytecode compiler and its corresponding
+virtual machine.

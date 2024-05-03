@@ -38,17 +38,3 @@ including the compiler as a library as introduced before.
 function invoking the go compiler. Error handling is omitted for the sake of
 simplicity.
 
-\begin{listing}[H]
-    \begin{minted}{go}
-func invokeCompiler(code string) {
-    f, _ := os.CreateTemp(".", "jit_*.go")
-    defer os.Remove(f)
-    f.WriteString(code)
-    c := exec.Command("go", "build", f.Name())
-    c.Run()
-}
-    \end{minted}
-    \caption{Tool-chain invocation}
-    \label{code:compiler_invocation}
-\end{listing}
-
