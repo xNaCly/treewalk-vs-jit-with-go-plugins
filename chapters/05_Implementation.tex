@@ -215,7 +215,7 @@ before mentioned function \texttt{FunctionGenerator.SetJit}, see
 \autoref{code:invoking-jit}. 
 
 In \autoref{code:jit-struct} the above explained constructs necessary for the
-concurrent compilation of functions are omitted,
+concurrent compilation of functions were omitted,
 \autoref{code:jit-struct-with-context-and-queue} therefore extends
 \autoref{code:jit-struct} to include said fields.
 
@@ -263,10 +263,63 @@ func (f *Function[V]) Eval(st Stack[V], a V) (V, error) {
 
 \section{Function Parameters and Erasing Types}
 
-% TODO: the issue with parameter types and parameter amounts that can be 0, 1 or more
+To enable the runtime calling the just in time compiled function, the
+signatures generated and compiled into the go plugin by the just in time
+compiler and the go compiler tool chain have to match. If not, the go runtime
+will invoke a panic upon failing to cast the function. The process of removing
+type information from parameters, variables and constants is often referred to
+% TODO: cite
+as \textit{type erasure}. The jit performs this for both input and output
+values from the compiled function, the resulting type the symbol contained in
+the go plugin is \mintinline{go}{func(...any) (any, error)}. The function
+% TODO: https://go.dev/ref/spec#Function_types
+accepts variadic parameters and thus allows the runtime to pass zero or more
+parameters into it, therefore supporting zero, one and multiple arguments to a
+compiled function. To specifically access the passed in arguments the just in
+time compiler code generation step has to insert index accesses into the
+parameter list. Argument name lookup is implemented by using the value of the
+\texttt{Function[V].ArgumentNames} field of
+\autoref{code:meta-tracing-meta-data} at the current index. Just in time
+compiling a function with two arguments, such as
+\autoref{code:codegen-example-neemann}, therefore results in the generated go
+code shown in \autoref{code:codegen-example-go}.
 
+\begin{listing}[H]
+    \begin{minted}[breaklines]{kotlin}
+func twoArguments(a, b)
+    a+b;
+    \end{minted}
+    \caption{Exemplary function with multiple arguments}
+    \label{code:codegen-example-neemann}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+func JIT_twoArgs(args ...any) (any, error) { 
+    a := args[0]
+    b := args[1]
+    return a+b
+}
+    \end{minted}
+    \caption{Go code generated for exemplary function with multiple arguments}
+    \label{code:codegen-example-go}
+\end{listing}
+
+However the function in \autoref{code:codegen-example-go} will not be be
+accepted by the go compiler upon invocation for the variables \texttt{a} and
+\texttt{b} are both of type \mintinline{go}{any}, thus not supporting
+arithmetic operations, such as the shown addition. Typecasting both \texttt{a}
+and \texttt{b} to either \mintinline{go}{float64}, \mintinline{go}{float32} or
+any \mintinline{go}{int} like type is necessary to enable compilation. To
+determine the correct type for \texttt{a} and \texttt{b} the before introduced
+meta tracing is especially useful. This meta tracing requires the translation
+of the languages type system into the go type system.
 
 \section{Type System Clashes}
+
+To enable the tracing of types and therefore casting function parameters to
+their correct type the jit compiler employs three functions that are attached
+to the \mintinline{go}{type Jit[V any] struct} type.
 
 % TODO: document the struggles with asserting types of arguments + the method
 % of converting generic data into its primitive underlying types and vise versa
