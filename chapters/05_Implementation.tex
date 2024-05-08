@@ -18,6 +18,7 @@ these chunks. The mitigation for this is introduced and explained in
 \autoref{chapter:plugin-api}.
 
 \section{Meta-tracing \& \texttt{JIT\_CONSTANT}}
+\label{sec:meta-tracing-jit-constant}
 
 \begin{listing}[H]
     \begin{minted}{go}
@@ -133,9 +134,9 @@ type FunctionGenerator[V any] struct {
     \label{code:funcgen-ref-jit}
 \end{listing}
 
-\autoref{code:funcgen-pass-jit} not only displays the passing of the JIT
-reference to the internal representation, but also includes the
-initialisation of the previously mentioned meta data necessary for
+\autoref{code:funcgen-pass-jit} not only displays passing the JIT reference
+to the runtimes representation of a function, but also includes the
+initialisation of the previously mentioned meta data necessary for the
 compilation of a function (see \autoref{code:meta-tracing-meta-data}).
 
 \begin{listing}[H]
@@ -164,7 +165,101 @@ func (g *FunctionGenerator[V]) GenerateFunc(ast parser2.AST, gc GeneratorContext
 \section{Concurrent Compilation}
 \label{sec:concurrent-compilation}
 
-% TODO: explain the need for compiling functions concurrently and the means to achive this goal
+Once a function is called more than the amount specified in the
+\texttt{JIT\_CONSTANT}, see \autoref{sec:meta-tracing-jit-constant}, the jit
+compiler attempts to compile said function. If done procedurally, this would
+stall the execution of the currently compiling function by at least the amount
+of time the jit takes to walk the ast of the function, generate the
+corresponding go code for each tree node, invoke the go compiler on the
+generated code to compile a shared object, load the go plugin and execute the
+compiled function. To minimise this performance impact on the runtime imposed
+by the startup of the jit compiler, as well as the compilation of functions,
+the compilation is moved to a go routine.
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+func (g *FunctionGenerator[V]) SetJit() *FunctionGenerator[V] {
+    ctx, cancel := context.WithCancel(context.Background())
+    g.jit = &Jit[V]{
+        Queue:  make(chan *Function[V], 16),
+        Ctx:    ctx,
+        Cancel: cancel,
+    }
+    go func() {
+        for {
+        select {
+            case f := <-g.jit.Queue:
+                if err := g.jit.Compile(f); err != nil {
+                    log.Println("[JIT] compilation failed, skipping this function", err)
+                }
+            case <-g.jit.Ctx.Done():
+                return
+            }
+        }
+    }()
+    return g
+}
+    \end{minted}
+    \caption{Invoking the JIT and its concurrent compilation}
+    \label{code:invoking-jit}
+\end{listing}
+
+To enable concurrent compilation the jit holds a buffered channel of type
+\mintinline{go}{chan *Function[V]}, this enables the non blocking compilation
+of functions and therefore falls in line with the goal of minimizing the
+performance impact of the compilation and the invocation itself. Furthermore
+the jit makes use of the \texttt{context} package to enable the cancelation of
+any compilations the jit currently performs by the runtime upon it exiting the
+interpretation of the current program. These steps are implemented in the
+before mentioned function \texttt{FunctionGenerator.SetJit}, see
+\autoref{code:invoking-jit}. 
+
+In \autoref{code:jit-struct} the above explained constructs necessary for the
+concurrent compilation of functions are omitted,
+\autoref{code:jit-struct-with-context-and-queue} therefore extends
+\autoref{code:jit-struct} to include said fields.
+
+\begin{listing}[H]
+    \begin{minted}{go}
+type Jit[V any] struct {
+	Queue  chan *Function[V]
+	Ctx    context.Context
+	Cancel context.CancelFunc
+}
+    \end{minted}
+    \caption{\mintinline{go}{Jit[V any] struct} type with concurrency constructs}
+    \label{code:jit-struct-with-context-and-queue}
+\end{listing}
+
+The consumer of the queue channel the jit compiler holds, see
+\autoref{code:jit-struct-with-context-and-queue}, can be seen in
+\autoref{code:invoking-jit}. The producer is defined in the
+\texttt{*Function[V].Eval} function. This function is invoked by the runtime
+for every invocation of said function. The runtime uses this function to handle
+meta tracing, such as the invocation counter and adding a function to the
+compilation queue, see \autoref{code:function-eval-compile}.
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+func (f *Function[V]) Eval(st Stack[V], a V) (V, error) {
+    if f.wasJit && f.JitFunc != nil {
+        // compiled function gets invoked here
+    }
+
+    if !f.wasJit && f.Counter >= JIT_CONSTANT && f.JitCompiler != nil && f.Ast != nil {
+        f.wasJit = true
+        f.JitCompiler.Queue <- f
+    }
+
+    f.Counter++
+    st.Push(a)
+    return f.Func(st.CreateFrame(1), nil)
+}
+
+    \end{minted}
+    \caption{\texttt{Function[V].Eval} and queuing functions for compilation}
+    \label{code:function-eval-compile}
+\end{listing}
 
 \section{Function Parameters and Erasing Types}
 

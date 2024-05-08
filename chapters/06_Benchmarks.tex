@@ -241,5 +241,12 @@ interpreter to leverage the optimized performance the Go compiler applies to
 binaries it compiles, thus enabling the observed large performance improvements
 for string manipulation and arithmetic operations.
 
+However the overhead of walking the tree to generate go code from each node,
+writing this code to a file, invoking the local go compiler via the
+\texttt{os/exec} package, loading the go plugin and looking the compiled
+function up, can not be neglected. Due to said influences Jit compilation
+is inherently unsuitable for small workloads and fast executing inputs, as seen
+on the workloads, inputs and iteration counts choosen for the benchmarks. 
+
 \section{Determining the \texttt{JIT\_CONSTANT}}
 \label{sec:jit-constant-discussion}
