@@ -98,10 +98,71 @@ type Function[V any] struct {
 
 \section{Connecting the JIT to the Runtime}
 
-% TODO: introduce JIT, why it holds a context, how its connected to the
-% parser2.Function struct and why it has a channel used as a queue
+To stay consistent with the builder pattern the current runtime employs, the
+jit consists of a struct (see \autoref{code:jit-struct}). The jit can be
+enabled by calling the \texttt{FunctionGenerator.SetJit()} (see
+\autoref{sec:concurrent-compilation}) function to create an instance of
+\mintinline{go}{Jit[V any] struct} and attaching to it
+\texttt{FunctionGenerator}. 
+
+\begin{listing}[H]
+    \begin{minted}{go}
+type Jit[V any] struct {}
+    \end{minted}
+    \caption{\mintinline{go}{Jit[V any] struct} type representing the just in time compiler}
+    \label{code:jit-struct}
+\end{listing}
+
+After parsing the input, the runtime attempts to walk the
+generated abstract syntax tree, by doing so it simultaneously generates
+internal representations of the corresponding nodes for interpretation.To
+connect the JIT to the runtime, the previously attached \mintinline{go}{type Jit[V any] struct} reference is passed to the internal representation of a
+function while generating interpretable structures (see \autoref{code:funcgen-pass-jit}), previously introduced in
+\autoref{code:meta-tracing-counter} and
+\autoref{code:meta-tracing-meta-data}.
+
+\begin{listing}[H]
+    \begin{minted}{go}
+type FunctionGenerator[V any] struct {
+    // ...
+    jit             *Jit[V]
+    // ...
+}
+    \end{minted}
+    \caption{\mintinline{go}{FunctionGenerator[V any] struct} holding a reference to the just in time compiler}
+    \label{code:funcgen-ref-jit}
+\end{listing}
+
+\autoref{code:funcgen-pass-jit} not only displays the passing of the JIT
+reference to the internal representation, but also includes the
+initialisation of the previously mentioned meta data necessary for
+compilation of a function (see \autoref{code:meta-tracing-meta-data}).
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+func (g *FunctionGenerator[V]) GenerateFunc(ast parser2.AST, gc GeneratorContext) (ParserFunc[V], error) {
+        // ...
+        closureFunc, err := g.GenerateFunc(a.Func, GeneratorContext{am: funcArgs})
+        if err != nil {
+            return nil, err
+        }
+        return func(st Stack[V], cs []V) (V, error) {
+            return g.closureHandler.FromClosure(Function[V]{
+                Name:          a.Name,
+                ArgumentNames: args,
+                JitCompiler:   g.jit,
+                Counter:       0,
+            }), nil
+        }, nil
+    //...
+}
+    \end{minted}
+    \caption{Passing the JIT reference to \mintinline{go}{type Function[V any] struct}}
+    \label{code:funcgen-pass-jit}
+\end{listing}
 
 \section{Concurrent Compilation}
+\label{sec:concurrent-compilation}
 
 % TODO: explain the need for compiling functions concurrently and the means to achive this goal
 
