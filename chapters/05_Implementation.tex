@@ -298,7 +298,7 @@ func twoArguments(a, b)
 func JIT_twoArgs(args ...any) (any, error) { 
     a := args[0]
     b := args[1]
-    return a+b
+    return a+b, nil
 }
     \end{minted}
     \caption{Go code generated for exemplary function with multiple arguments}
@@ -318,11 +318,43 @@ of the languages type system into the go type system.
 \section{Type System Clashes}
 
 To enable the tracing of types and therefore casting function parameters to
-their correct type the jit compiler employs three functions that are attached
-to the \mintinline{go}{type Jit[V any] struct} type.
+their correct type. The jit compiler employs three functions that are attached
+to the \mintinline{go}{type Jit[V any] struct} type, see
+\autoref{code:jit-struct-with-type-system-helpers}.
 
-% TODO: document the struggles with asserting types of arguments + the method
-% of converting generic data into its primitive underlying types and vise versa
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+type Jit[V any] struct {
+	TypeToString func(V) string
+	ValueToUnderlying func(V) any
+	UnderlyingToValue func(any) V
+}
+    \end{minted}
+    \caption{\mintinline{go}{Jit[V any] struct} type with type system conversion helpers}
+    \label{code:jit-struct-with-type-system-helpers}
+\end{listing}
+
+All of these functions are defined when creating the jit compiler.
+\texttt{TypeToString} is used to solve the afore introduced issue for casting
+function parameters to their respective types.
+\autoref{code:codegen-example-neemann} is therefore no longer compiled to
+\autoref{code:codegen-example-go}, but instead includes parameter type casts,
+see \autoref{code:codegen-example-go-with-cast}.
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+func JIT_twoArgs(args ...any) (any, error) { 
+    a := args[0].(float64)
+    b := args[1].(float64)
+    return a+b, nil
+}
+    \end{minted}
+    \caption{Go code generated for exemplary function with parameter type casts}
+    \label{code:codegen-example-go-with-cast}
+\end{listing}
+
+% TODO: ValueToUnderlying
+% TODO: UnderlyingToValue
 
 \section{Bailing out to the Interpreter}
 
