@@ -268,16 +268,15 @@ signatures generated and compiled into the go plugin by the just in time
 compiler and the go compiler tool chain have to match. If not, the go runtime
 will invoke a panic upon failing to cast the function. The process of removing
 type information from parameters, variables and constants is often referred to
-% TODO: cite
-as \textit{type erasure}. The jit performs this for both input and output
-values from the compiled function, the resulting type the symbol contained in
-the go plugin is \mintinline{go}{func(...any) (any, error)}. The function
-% TODO: https://go.dev/ref/spec#Function_types
-accepts variadic parameters and thus allows the runtime to pass zero or more
-parameters into it, therefore supporting zero, one and multiple arguments to a
-compiled function. To specifically access the passed in arguments the just in
-time compiler code generation step has to insert index accesses into the
-parameter list. Argument name lookup is implemented by using the value of the
+as \textit{type erasure} \cite[A.2 Type erasure]{crary2002intensional}. The jit
+performs this for both input and output values from the compiled function, the
+resulting type the symbol contained in the go plugin is
+\mintinline{go}{func(...any) (any, error)}. The function accepts variadic
+parameters and thus allows the runtime to pass zero or more parameters into it,
+therefore supporting zero, one and multiple arguments to a compiled function.
+To specifically access the passed in arguments the just in time compiler code
+generation step has to insert index accesses into the parameter list. Argument
+name lookup is implemented by using the value of the
 \texttt{Function[V].ArgumentNames} field of
 \autoref{code:meta-tracing-meta-data} at the current index. Just in time
 compiling a function with two arguments, such as
@@ -353,8 +352,42 @@ func JIT_twoArgs(args ...any) (any, error) {
     \label{code:codegen-example-go-with-cast}
 \end{listing}
 
-% TODO: ValueToUnderlying
-% TODO: UnderlyingToValue
+The JIT compiler uses the go type system because it generates go code. The
+compiled code has no knowledge of the type system employed in the abstract
+language the JIT computes its output from. To allow for passing abstract types
+into just in time compiled functions the jit holds the
+\texttt{ValueToUnderlying} function. This function converts the aforementioned
+custom defined types to types the go type system and compiler accept.
+Furthermore it's used to convert all incoming function parameters of a JIT
+compiled function. \texttt{UnderlyingToValue} is the counterpart to
+\texttt{ValueToUnderlying}, it converts all values returned from just in time
+compiled functions from the go type to their abstract language object system
+type. 
+
+Considering \autoref{code:codegen-example-neemann}, the JIT uses meta tracing,
+as introduced in \autoref{sec:meta-tracing-jit-constant}, to determine the
+types of the variables \texttt{a} and \texttt{b}. The runtime uses type
+aliases, called \mintinline{go}{type Float float64} for floating point
+integers, \mintinline{go}{type Int int} for integers and 
+\mintinline{go}{type String string}. Each abstracting upon the go type and thus making it
+incompatible with the standard \mintinline{go}{float64}, \mintinline{go}{int}
+and \mintinline{go}{string} type. The JIT is implemented in a generic way and
+does therefore not have any knowledge of this, as introduced before.
+
+\texttt{ValueToUnderlying} ($\lambda$) is used to convert the values of the
+function arguments to their values, before passing the converted type
+information to the function ($f$). After the jit compiled function returns a
+value, \texttt{UnderlyingToValue} ($\gamma$) is used to convert the value to
+the abstract object system the language is using ($T$),
+\autoref{eq:type-conversion} formalises this type conversion process.
+
+\begin{figure}[H]
+    \begin{eqnarray}
+T \rightarrow \lambda(T) \rightarrow f(\lambda(T)) \rightarrow \gamma(f(\lambda(T))) \rightarrow T
+    \end{eqnarray}
+    \caption{Formalising type conversion for function parameter and return types}
+    \label{eq:type-conversion}
+\end{figure}
 
 \section{Bailing out to the Interpreter}
 
