@@ -97,6 +97,28 @@ type Function[V any] struct {
     \label{code:meta-tracing-meta-data}
 \end{listing}
 
+The runtime fills these values upon invoking the compilation of the current
+function, see \autoref{code:meta-tracing-adding-meta-data}.
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+func (f *Function[V]) Eval(st Stack[V], a V) (V, error) {
+    // ...
+    if !f.wasJit && f.Counter >= JIT_CONSTANT && f.JitCompiler != nil && f.Ast != nil {
+        f.wasJit = true
+        f.MetaData = &MetaData{
+            Parameters: []MetaDataParameter{
+                {Name: f.ArgumentNames[0], Type: f.JitCompiler.TypeToString(a)},
+            },
+        }
+    }
+    // ...
+}
+    \end{minted}
+    \caption{Computing meta data}
+    \label{code:meta-tracing-adding-meta-data}
+\end{listing}
+
 \section{Connecting the JIT to the Runtime}
 
 To stay consistent with the builder pattern the current runtime employs, the
