@@ -416,7 +416,56 @@ T \rightarrow \lambda(T) \rightarrow f(\lambda(T)) \rightarrow \gamma(f(\lambda(
 
 \section{Bailing out to the Interpreter}
 
-% TODO: errors in the jit compile stage should not stop the execution of the
-% interpreter, if an error is encountered the jit simply lets the interpreter
-% do its work and skips the compilation of the specific function 
+The JIT can be understood as a separate stage of the evaluation of a given
+input. An interpreter at first the input is split into tokens, this process is
+referred to as lexical analysis. The following step is composed of parsing the
+tokens computed by the previous step and forming an abstract syntax tree, in
+which each node represents an executable entity, such as a constant, control
+flow or function calls. The last stage is to evaluate the previously built
+abstract syntax tree by walking each node and executing it
+\cite{hippisley2010lexical}. A just in time compiler differs from these stages
+by being invoked parallel to the runtime executing the input and being able to
+stop the execution of a compiled function and exiting out of the compiled
+function back into the runtime evaluation of the function, while discarding the
+compiled function. This process of discarding compiled code and passing the
+task of executing a function back to the runtime upon encountering an error, is
+commonly described as a \textit{bailout} \cite{aycock2003brief}. This process
+is implemented in the previously introduced \texttt{(*Function).Eval()}
+function.
 
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+func (f *Function[V]) Eval(st Stack[V], a V) (V, error) {
+    if f.wasJit && f.JitFunc != nil {
+        out, err := f.JitFunc(f.JitCompiler.ValueToUnderlying(a))
+        if err != nil {
+            f.JitFunc = nil
+            f.wasJit = false
+            f.Counter = 0
+            goto bailout
+        }
+        return out, nil
+    }
+
+    // ...
+
+bailout:
+    f.Counter++
+    st.Push(a)
+    return f.Func(st.CreateFrame(1), nil)
+}
+    \end{minted}
+    \caption{Bailing out of the jit context to the runtime upon encountering an error}
+    \label{code:jit-bailout}
+\end{listing}
+
+\mintinline{go}{type Function[V any] struct} is the internal representation of
+a function in the runtime and the abstract syntax tree and holds a reference to
+the compiled form of the function. \autoref{code:jit-bailout} shows the
+\texttt{Eval()} function. The compiled version of the function is discarded of,
+once the execution of the compiled function yields an error. Furthermore the
+counter of the meta tracing logic for marking a function as compilable is reset
+to $0$ and the flag for marking a function as compiled by the jit is set to
+\texttt{false}. The last step taken, is to jump to the \texttt{bailout} label
+and thus restart the execution of the current function, but this time in the
+runtime, not in the compiled form of the function.
