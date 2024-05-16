@@ -229,9 +229,11 @@ list(100_000)
     \label{chart:benchmark-realworld}
 \end{figure}
 
-\section{Discussing the \texttt{JIT\_CONSTANT}}
+\section{Determining the \texttt{JIT\_CONSTANT}}
 \label{sec:jit-constant-discussion}
 
-The jit constant is used to establish a threshold. This threshold acts as
-the criteria for categorizing a given function as a compilation target  for
-the jit compiler.
+The jit constant is used to establish a optimal relation between the
+performance possible performance improvements and the negative performance
+impact of invoking the compilation a function. Therefore the threshold acts as
+the criteria for categorizing a given function as a compilation target for the
+jit compiler. 

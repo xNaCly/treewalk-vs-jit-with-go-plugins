@@ -39,3 +39,68 @@ var persons = value.NewListOfMaps[Person](PersonToMap, Persons)
     \caption{Passing Go values into the language context - source \cite{parser2_xnacly}}
     \label{code:go-to-language-interop}
 \end{listing}
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+func toUnderlying(v value.Value) (o any) {
+    switch t := v.(type) {
+        case value.Bool:
+            o, _ = t.ToBool()
+        case value.Int:
+            to, _ := t.ToInt()
+            o = float64(to)
+        case value.Float:
+            o, _ = t.ToFloat()
+        case value.String:
+            o, _ = t.ToString(funcGen.Stack[value.Value]{})
+        case value.Map:
+            m := make(map[string]any, t.Size())
+            t.Iter(func(key string, v value.Value) bool {
+                m[key] = toUnderlying(v)
+                return true
+            })
+            o = m
+        default:
+            panic(fmt.Sprintf("%T conversion to underlying type not supported by jit", t))
+    }
+    return
+}
+jit := &Jit{
+    // ...
+    ValueToUnderlying: toUnderlying,
+}
+    \end{minted}
+    \caption{\texttt{ValueToUnderlying} implementation}
+    \label{code:type-clashes-impl-tounderlying}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+func toValue(v any) value.Value {
+    switch t := v.(type) {
+        case int:
+            return value.Int(t)
+        case float64:
+            return value.Float(t)
+        case bool:
+            return value.Bool(t)
+        case string:
+            return value.String(t)
+        case map[string]any:
+            m := make(value.RealMap, len(t))
+            for k, v := range t {
+                m[k] = toValue(v)
+            }
+            return value.NewMap(m)
+        default:
+            panic(fmt.Sprintf("%T conversion to high level type not supported by jit", t))
+    }
+}
+jit := &Jit{
+    // ...
+    UnderlyingToValue: toValue,
+}
+    \end{minted}
+    \caption{\texttt{UnderlyingToValue} implementation}
+    \label{code:type-clashes-impl-tovalue}
+\end{listing}

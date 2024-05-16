@@ -1,6 +1,12 @@
 \chapter{Conclusion}
 
-% TODO: introduction to criteria for coming to a conclusion
+To evaluate wheter the go plugin api is feasible for just in time compilation
+one must consider the usability and robustness of the resulting implementation.
+Furthermore it is crusial to take the resulting performance impact of the
+solution into account, while not neglecting the complexity of the
+implementation.
+
+The following section includes in depth examination of the above criteria.
 
 \section{Usability and Robustness}
 
@@ -30,6 +36,19 @@ on the workloads, inputs and iteration counts choosen for the benchmarks.
 
 \section{Implementation Complexity}
 
-% TODO: talk about code gen complexity
-% TODO: talk about possible errors occurring in the code gen and how they are
-% hard to debug in the resulting shared object
+Due to the architecture of the runtime, the abstract syntax tree for a given
+node is available while evaluating said node. The just-in-time compiler can
+therefore use this tree to generate go code for every encountered node.
+Furthermore the just-in-time compiler uses the existing runtime facilities for
+performing meta tracing and asserting types. While the runtime architecture is
+advantageous for the above, it made designing and implementing the just-in-time
+compiler itself complex. There are several reasons for this, foremost the
+package architecture, the just-in-time compiler has to depend on multiple
+packages and use type assertions for custom types defined in subpackages, thus
+it can not extracted into a signular \texttt{jit} package. Furthermore the
+runtime was designed to be used with a generic language and using the go
+generics feature. This made it especially complicated to implement type
+assertions and type conversion for the generated go code, this is also the
+reason for the introduction of the functions presented in
+\autoref{sec:type-system-clashes} and the need for including the implementation
+of these functions when defining a language for the runtime.

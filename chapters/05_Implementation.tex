@@ -359,11 +359,14 @@ type Jit[V any] struct {
 \end{listing}
 
 All of these functions are defined when creating the jit compiler.
-\texttt{TypeToString} is used to solve the afore introduced issue for casting
-function parameters to their respective types.
+\texttt{TypeToString} is used to solve the afore introduced issue for
+casting function parameters to their respective types.
 \autoref{code:codegen-example-neemann} is therefore no longer compiled to
-\autoref{code:codegen-example-go}, but instead includes parameter type casts,
-see \autoref{code:codegen-example-go-with-cast}.
+\autoref{code:codegen-example-go}, but instead includes parameter type
+casts, see \autoref{code:codegen-example-go-with-cast}.
+\autoref{code:type-clashes-impl-typetostring} shows the implementation used
+for type casts in the generated go code with the \texttt{value} language
+dialect introduced in \autoref{sec:feature-set}.
 
 \begin{listing}[H]
     \begin{minted}[breaklines]{go}
@@ -389,6 +392,30 @@ compiled function. \texttt{UnderlyingToValue} is the counterpart to
 compiled functions from the go type to their abstract language object system
 type. 
 
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+jit := &Jit{
+    // ...
+    TypeToString: func(v value.Value) string {
+        switch v.(type) {
+        case value.String:
+            return "string"
+        case value.Float, value.Int:
+            return "float64"
+        case value.Bool:
+            return "bool"
+        case value.Map:
+            return "map[string]any"
+        default:
+            return "any"
+        }
+    }
+}
+    \end{minted}
+    \caption{\texttt{TypeToString} examplary implementation}
+    \label{code:type-clashes-impl-typetostring}
+\end{listing}
+
 Considering \autoref{code:codegen-example-neemann}, the JIT uses meta tracing,
 as introduced in \autoref{sec:meta-tracing-jit-constant}, to determine the
 types of the variables \texttt{a} and \texttt{b}. The runtime uses type
@@ -404,7 +431,12 @@ function arguments to their values, before passing the converted type
 information to the function ($f$). After the jit compiled function returns a
 value, \texttt{UnderlyingToValue} ($\gamma$) is used to convert the value to
 the abstract object system the language is using ($T$),
-\autoref{eq:type-conversion} formalises this type conversion process.
+\autoref{eq:type-conversion} formalises this type conversion process, while
+\autoref{code:type-clashes-impl-tounderlying} and
+\autoref{code:type-clashes-impl-tovalue} show excerpts of the function
+implementations of the \texttt{ValueToUnderlying} and
+\texttt{UnderlyingToValue} for the runtime dialect introduced in
+\autoref{sec:feature-set}.
 
 \begin{figure}[H]
     \begin{eqnarray}
