@@ -9,9 +9,24 @@
 
 \section{Performance}
 
-% TODO: talk about compiler invocation cost
-% TODO: talk about memory usage and runtime savings, introduce charts and
-% tables to compare memory and runtime values: jit enabled/disabled
+Based on performed benchmarks (see \autoref{sec:benchmarks}), their results and
+visual representation, the performance impact of the JIT-Compiler is
+substantial for most workloads, but especially for larger iterations, such as
+in hot paths. The Go compiler optimises compiled plugins as if it were to
+compile a Go application, such as reducing memory allocations\cite[Escape
+Analysis]{go_wiki_optimization}, inlining
+functions\cite[Inlining]{go_wiki_optimization} and not allocating empty
+structures \cite[Interface Values]{go_wiki_optimization}. This allows the
+interpreter to leverage the optimized performance the Go compiler applies to
+binaries it compiles, thus enabling the observed large performance improvements
+for string manipulation and arithmetic operations.
+
+However the overhead of walking the tree to generate go code from each node,
+writing this code to a file, invoking the local go compiler via the
+\texttt{os/exec} package, loading the go plugin and looking the compiled
+function up, can not be neglected. Due to said influences Jit compilation
+is inherently unsuitable for small workloads and fast executing inputs, as seen
+on the workloads, inputs and iteration counts choosen for the benchmarks. 
 
 \section{Implementation Complexity}
 
