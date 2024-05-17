@@ -4,13 +4,15 @@ To evaluate wheter the go plugin api is feasible for just in time compilation
 one must consider the usability and robustness of the resulting implementation.
 Furthermore it is crusial to take the resulting performance impact of the
 solution into account, while not neglecting the complexity of the
-implementation.
-
-The following section includes in depth examination of the above criteria.
+implementation. The following section includes in depth examination of the
+above criteria to conclude on the aforementioned consideration.
 
 \section{Usability and Robustness}
 
-% TODO: requires go toolchain -> bad and not robust, requires user interaction
+The limiting usability factor is the requirement to have a local copy of the go
+toolchain available. This makes user interaction in the way of installing the
+go compiler necessary. 
+
 % TODO: no support for windows -> excludes a large user base
 
 \section{Performance}
