@@ -11,11 +11,11 @@ interpreters runtime and executed instead of interpreting the code chunk
 categorizing code segments as ``hot'', improving the performance of the just in
 time compiler and error handling are explored in this chapter.
 
-Contrary to the previously introduced definition of a just in time
-compiler in the context of programming language interpreters, go does
-not support dynamically loading machine code into memory and executing
-these chunks. The mitigation for this is introduced and explained in
-\autoref{chapter:plugin-api}.
+Contrary to the previously introduced definition of a just in time compiler in
+the context of programming language interpreters, go does not support
+dynamically loading machine code into memory and executing said memory chunks.
+The mitigation for this is to make use of the previously introduced and
+explained plugin package, see \autoref{chapter:plugin-api}.
 
 \section{Meta-tracing \& \texttt{JIT\_CONSTANT}}
 \label{sec:meta-tracing-jit-constant}

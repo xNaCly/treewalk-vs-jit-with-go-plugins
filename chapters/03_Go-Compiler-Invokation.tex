@@ -33,8 +33,19 @@ target system, the overhead of tasking the operating system with starting the
 compiler, writing the generated code to a temporary file and compiling this
 temporary file instead of doing all of the aforementioned inside of the JIT by
 including the compiler as a library as introduced before.
-
 \autoref{code:compiler_invocation} shows a simplified implementation of a
-function invoking the go compiler. Error handling is omitted for the sake of
-simplicity.
+function invoking the go compiler. 
+
+\begin{listing}[H]
+    \begin{minted}{go}
+func invokeCompiler(code string) {
+    f, _ := os.CreateTemp(".", "jit_*.go")
+    defer os.Remove(f)
+    f.WriteString(code)
+    exec.Command("go", "build", f.Name()).Run()
+}
+    \end{minted}
+    \caption{Tool-chain invocation}
+    \label{code:compiler_invocation}
+\end{listing}
 
