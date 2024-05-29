@@ -200,6 +200,16 @@ compiled function. To minimise this performance impact on the runtime imposed
 by the startup of the jit compiler, as well as the compilation of functions,
 the compilation is moved to a go routine.
 
+To enable concurrent compilation the jit holds a buffered channel of type
+\mintinline{go}{chan *Function[V]}, this enables the non blocking compilation
+of functions and therefore falls in line with the goal of minimizing the
+performance impact of the compilation and the invocation itself. Furthermore
+the jit makes use of the \texttt{context} package to enable the cancelation of
+any compilations the jit currently performs by the runtime upon it exiting the
+interpretation of the current program. These steps are implemented in the
+before mentioned function \texttt{FunctionGenerator.SetJit}, see
+\autoref{code:invoking-jit}. 
+
 \begin{listing}[H]
     \begin{minted}[breaklines]{go}
 func (g *FunctionGenerator[V]) SetJit() *FunctionGenerator[V] {
@@ -227,16 +237,6 @@ func (g *FunctionGenerator[V]) SetJit() *FunctionGenerator[V] {
     \caption{Invoking the JIT and its concurrent compilation}
     \label{code:invoking-jit}
 \end{listing}
-
-To enable concurrent compilation the jit holds a buffered channel of type
-\mintinline{go}{chan *Function[V]}, this enables the non blocking compilation
-of functions and therefore falls in line with the goal of minimizing the
-performance impact of the compilation and the invocation itself. Furthermore
-the jit makes use of the \texttt{context} package to enable the cancelation of
-any compilations the jit currently performs by the runtime upon it exiting the
-interpretation of the current program. These steps are implemented in the
-before mentioned function \texttt{FunctionGenerator.SetJit}, see
-\autoref{code:invoking-jit}. 
 
 In \autoref{code:jit-struct} the above explained constructs necessary for the
 concurrent compilation of functions were omitted,
@@ -285,7 +285,7 @@ func (f *Function[V]) Eval(st Stack[V], a V) (V, error) {
     \label{code:function-eval-compile}
 \end{listing}
 
-\section{Function Parameters and Erasing Types}
+\section{Function Parameters and erasing Types}
 
 To enable the runtime calling the just in time compiled function, the
 signatures generated and compiled into the go plugin by the just in time
@@ -448,9 +448,28 @@ T \rightarrow \lambda(T) \rightarrow f(\lambda(T)) \rightarrow \gamma(f(\lambda(
 
 \section{Invoking a compiled Function}
 
-% TODO: invocation
-% TODO: dealing with argument conversion
-% TODO: dealing with return value conversion
+\begin{listing}[H]
+    \begin{minted}[breaklines]{go}
+func (f *Function[V]) Eval(st Stack[V], a V) (V, error) {
+    if f.wasJit && f.JitFunc != nil {
+        out, _ := f.JitFunc(f.JitCompiler.ValueToUnderlying(a))
+        // ...
+        return out, nil
+    }
+    // ...
+}
+    \end{minted}
+    \caption{Invoking a compiled function}
+    \label{code:invoking_function}
+\end{listing}
+
+\autoref{code:invoking_function} displays the invocation of a previously
+compiled function. The \texttt{ValueToUnderlying} function introduced in
+\autoref{sec:type-system-clashes} is used to convert the parameter passed
+into the function. While the output of the compiled function is converted to
+the language object system when compiling the function and looking up the
+symbol in the plugin, as introduced in \autoref{sec:embedding-go-plugins}
+and further explained in \autoref{sec:compiler-pipeline}. 
 
 \section{Bailing out to the Interpreter}
 
@@ -470,6 +489,17 @@ task of executing a function back to the runtime upon encountering an error, is
 commonly described as a \textit{bailout} \cite{aycock2003brief}. This process
 is implemented in the previously introduced \texttt{(*Function).Eval()}
 function.
+
+\mintinline{go}{type Function[V any] struct} is the internal representation of
+a function in the runtime and the abstract syntax tree and holds a reference to
+the compiled form of the function. \autoref{code:jit-bailout} shows the
+\texttt{Eval()} function. The compiled version of the function is discarded of,
+once the execution of the compiled function yields an error. Furthermore the
+counter of the meta tracing logic for marking a function as compilable is reset
+to $0$ and the flag for marking a function as compiled by the jit is set to
+\texttt{false}. The last step taken, is to jump to the \texttt{bailout} label
+and thus restart the execution of the current function, but this time in the
+runtime, not in the compiled form of the function.
 
 \begin{listing}[H]
     \begin{minted}[breaklines]{go}
@@ -497,13 +527,55 @@ bailout:
     \label{code:jit-bailout}
 \end{listing}
 
-\mintinline{go}{type Function[V any] struct} is the internal representation of
-a function in the runtime and the abstract syntax tree and holds a reference to
-the compiled form of the function. \autoref{code:jit-bailout} shows the
-\texttt{Eval()} function. The compiled version of the function is discarded of,
-once the execution of the compiled function yields an error. Furthermore the
-counter of the meta tracing logic for marking a function as compilable is reset
-to $0$ and the flag for marking a function as compiled by the jit is set to
-\texttt{false}. The last step taken, is to jump to the \texttt{bailout} label
-and thus restart the execution of the current function, but this time in the
-runtime, not in the compiled form of the function.
+\section{Compiler pipeline}
+\label{sec:compiler-pipeline}
+
+As previously introduced, the runtime invokes the just in time compiler for
+a given function once the compilation criteria are met, in this case the
+compilation threshold. This invocation happens in the form of adding the
+function to the just in time compilation queue. 
+
+\begin{figure}[H]
+    \tikzstyle{process} = [rectangle, minimum width=2cm, minimum height=1.5cm, text centered, draw=black, inner sep=10pt]
+    \tikzstyle{arrow} = [thick,->,>=stealth]
+    \centering
+    \begin{tikzpicture}[node distance=3.5cm]
+        \node (runtime) [process] {Runtime};
+        \node (jitcompiler) [process, right of=runtime] {JIT compiler};
+        \node (jitcodegen) [process, right of=jitcompiler] {Code gen};
+        \node (jitfunction) [process, below of=runtime] {Function};
+        \node (symbollookup) [process, right of=jitfunction] {Symbol lookup};
+        \node (gocompiler) [process, right of=symbollookup] {Go compiler};
+
+        \draw [arrow] (runtime.east) -- (jitcompiler.west);
+        \draw [arrow] (jitcompiler.east) -- (jitcodegen.west);
+        \draw [arrow] (jitcodegen.south) -- (gocompiler.north);
+        \draw [arrow] (gocompiler.west) -- (symbollookup.east);
+        \draw [arrow] (symbollookup.west) -- (jitfunction.east);
+        \draw [arrow] (jitfunction.north) -- (runtime.south);
+    \end{tikzpicture}
+    \caption{Compilation pipeline}
+    \label{chart:pipeline-conversion}
+\end{figure}
+
+The just in time compiler proceeds to pass the accepted function and the
+meta data for its returning types and the passed in arguments to the code
+generation step and converts the abstract syntax tree nodes for the function
+into their corresponding go representation. After the code generation step
+of the compilation pipeline, the go toolchain, including the compiler, is
+invoked and thus creates a shared object, generally named a go plugin
+\cite{go_plugin}.
+
+Once this plugin is compiled, the symbol lookup stage denotes the process of
+loading the plugin and performing a lookup for the compiled function as a
+non typed symbol. The last step of this lookup stage is the type conversion
+for the return value of the compiled function as well as type casting the
+whole function to a function accepting and returing values which types are
+erased. After this the function is regarded as compiled and ready to be
+attached to the runtime and executed once the runtime invokes the function
+again.
+
+\autoref{chart:pipeline-conversion} visualizes the above while highlighting
+the dependence of the steps in the JIT compilation pipeline.
+
+% TODO: write more here
