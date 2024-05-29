@@ -9,13 +9,17 @@ machine code ad hoc. This machine code is then loaded into the memory of the
 interpreters runtime and executed instead of interpreting the code chunk
 \cite{jvm_efficient}. The details of just in time compilation, meta tracing,
 categorizing code segments as ``hot'', improving the performance of the just in
-time compiler and error handling are explored in this chapter.
+time compiler and error handling are explored in this chapter. This chapter
+also features the concurrent nature of the compilation pipeline while
+introducing type conversion, the connection and interaction of runtime and jit,
+and the error managment that is responsible for gracefully handling errors
+occuring in compiled functions.
 
 Contrary to the previously introduced definition of a just in time compiler in
 the context of programming language interpreters, go does not support
 dynamically loading machine code into memory and executing said memory chunks.
 The mitigation for this is to make use of the previously introduced and
-explained plugin package, see \autoref{chapter:plugin-api}.
+explained plugin package, see \autoref{chapter:plugin-api}. 
 
 \section{Meta-tracing \& \texttt{JIT\_CONSTANT}}
 \label{sec:meta-tracing-jit-constant}
@@ -285,7 +289,7 @@ func (f *Function[V]) Eval(st Stack[V], a V) (V, error) {
     \label{code:function-eval-compile}
 \end{listing}
 
-\section{Function Parameters and erasing Types}
+\section{Function Parameters and erasing Type Information}
 
 To enable the runtime calling the just in time compiled function, the
 signatures generated and compiled into the go plugin by the just in time
@@ -558,24 +562,24 @@ function to the just in time compilation queue.
     \label{chart:pipeline-conversion}
 \end{figure}
 
-The just in time compiler proceeds to pass the accepted function and the
-meta data for its returning types and the passed in arguments to the code
+The just in time compiler proceeds to pass the accepted function and the meta
+data for its returning types along with the passed in arguments to the code
 generation step and converts the abstract syntax tree nodes for the function
-into their corresponding go representation. After the code generation step
-of the compilation pipeline, the go toolchain, including the compiler, is
-invoked and thus creates a shared object, generally named a go plugin
-\cite{go_plugin}.
-
+into their corresponding go representation. After the code generation step of
+the compilation pipeline, the go toolchain, including the compiler, is invoked
+and thus creates a shared object, generally named a go plugin \cite{go_plugin}.
 Once this plugin is compiled, the symbol lookup stage denotes the process of
-loading the plugin and performing a lookup for the compiled function as a
-non typed symbol. The last step of this lookup stage is the type conversion
-for the return value of the compiled function as well as type casting the
-whole function to a function accepting and returing values which types are
-erased. After this the function is regarded as compiled and ready to be
-attached to the runtime and executed once the runtime invokes the function
-again.
+loading the plugin and performing a lookup for the compiled function as a non
+typed symbol. The last step of this lookup stage is the type conversion for the
+return value of the compiled function as well as type casting the whole
+function to a function accepting and returing values which types are erased.
+After this the function is regarded as compiled and ready to be attached to the
+runtime and executed once the runtime invokes the function again.
 
-\autoref{chart:pipeline-conversion} visualizes the above while highlighting
-the dependence of the steps in the JIT compilation pipeline.
-
-% TODO: write more here
+\autoref{chart:pipeline-conversion} visualizes the above while highlighting the
+dependence of the steps in the JIT compilation pipeline. The compiler pipeline
+is seperate from the runtime and therefore does not interfer with the execution
+of a function in the runtime of the programming language. This also enables the
+parallelisation of the compilation processes, such as moving the code
+generation, the go compiler tool chain invokation and the symbol lookup into a
+go routine.
