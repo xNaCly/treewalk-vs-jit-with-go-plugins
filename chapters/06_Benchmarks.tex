@@ -194,12 +194,12 @@ list(100_000)
         Iterations & Mean Execution Time & Mean Execution Time (JIT) & $\Delta$ & Improvement \\ 
         \hline
         100k & 0.18s & 0.18s & 0.00s & 0.000x \\
-        500k & 0.87s & 0.82s & 0.05s & 1.024x \\
+        500k & 0.87s & 0.82s & 0.05s & 1.061x \\
         1mio & 1.68s & 1.36s & 0.32s & 1.240x \\
         5mio & 8.04s & 5.62s & 2.42s & 1.431x\\
     \end{tabular}
     \label{table:benchmark-realworld}
-    \caption{String concatenation benchmark results}
+    \caption{Real world heavy load benchmark results}
 \end{table}
 
 \begin{figure}[H]
@@ -232,8 +232,131 @@ list(100_000)
 \section{Determining the \texttt{JIT\_CONSTANT}}
 \label{sec:jit-constant-discussion}
 
-The jit constant is used to establish a optimal relation between the
-performance possible performance improvements and the negative performance
-impact of invoking the compilation a function. Therefore the threshold acts as
-the criteria for categorizing a given function as a compilation target for the
-jit compiler. 
+The jit constant, introduced in \autoref{sec:meta-tracing-jit-constant}, is
+used to establish a optimal relation between the possible performance
+improvements and the negative performance impact of invoking the compilation a
+function. Therefore the threshold acts as the criteria for categorizing a given
+function as a compilation target for the jit compiler. To find the optimal
+relation between compiling a function too early which could result in degraded
+overall performance or compiling the a function too late, which does not allow
+the JIT to enable its full potential.
+
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|c|c}
+        Constant & Iterations & Mean Execution Time & $\Delta$ & Improvement \\ 
+        \hline
+        Off         & 100k & 0.18s & 0.00s & 0.000x \\
+                    & 500k & 0.87s & 0.00s & 0.000x \\
+                    & 1mio & 1.68s & 0.00s & 0.000x \\
+                    & 5mio & 8.04s & 0.00s & 0.000x \\
+        \hline
+        1,000       & 100k & 0.18s & 0.00s & 0.000x \\
+                    & 500k & 0.82s & 0.05s & 1.061x \\
+                    & 1mio & 1.36s & 0.32s & 1.240x \\
+                    & 5mio & 5.62s & 2.42s & 1.431x \\
+        \hline
+        10,000      & 100k & 0.18s & 0.00s & 0.000x \\
+                    & 500k & 0.83s & 0.04s & 1.048x \\
+                    & 1mio & 1.36s & 0.32s & 1.240x \\
+                    & 5mio & 5.57s & 2.47s & 1.443x \\
+        \hline
+        100,000     & 100k & 0.18s & 0.00s & 0.000x \\
+                    & 500k & 0.85s & 0.02s & 1.024x \\
+                    & 1mio & 1.42s & 0.26s & 1.183x \\
+                    & 5mio & 5.64s & 2.40s & 1.426x \\
+        \hline
+        250,000     & 100k & 0.00s & 0.00s & 0.000x \\
+                    & 500k & 0.00s & 0.00s & 0.000x \\
+                    & 1mio & 0.00s & 0.00s & 0.000x \\
+                    & 5mio & 0.00s & 0.00s & 0.000x \\
+        \hline
+        500,000     & 100k & 0.00s & 0.00s & 0.000x \\
+                    & 500k & 0.00s & 0.00s & 0.000x \\
+                    & 1mio & 0.00s & 0.00s & 0.000x \\
+                    & 5mio & 0.00s & 0.00s & 0.000x \\
+        \hline
+        750,000     & 100k & 0.00s & 0.00s & 0.000x \\
+                    & 500k & 0.00s & 0.00s & 0.000x \\
+                    & 1mio & 0.00s & 0.00s & 0.000x \\
+                    & 5mio & 0.00s & 0.00s & 0.000x \\
+    \end{tabular}
+    \label{table:benchmark-realworld-jit}
+    \caption{\texttt{JIT\_CONSTANT} benchmark result}
+\end{table}
+
+The benchmark to determine the aforementioned is conducted by executing the
+benchmark representing the real world workload, shown in
+\autoref{code:benchmark-realworld}, with differing values for the
+\texttt{JIT\_CONSTANT}, ranging from a thousand to one million and recording
+the delta between the runtime with and without the JIT enabled for each
+\texttt{JIT\_CONSTANT} value. \autoref{table:benchmark-realworld-jit} displays
+the results of the measurements while .
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+
+        \pgfplotstableread[col sep=comma]{benchmarks/real.csv}\realBenchmark
+        \pgfplotstableread[col sep=comma]{benchmarks/realJIT.csv}\realBenchmarkJIT
+        \pgfplotstableread[col sep=comma]{benchmarks/realJIT10k.csv}\realBenchmarkJITten
+        \pgfplotstableread[col sep=comma]{benchmarks/realJIT100k.csv}\realBenchmarkJIThundred
+        \begin{axis}[
+            title={JIT\_CONSTANT Benchmark},
+            xlabel={Iterations},
+            ylabel={Mean Execution Time (s)},
+            legend style={at={(0.5,-0.2)},anchor=north},
+            grid style={dotted},
+            major grid style={dotted,black!50},
+            minor grid style={dotted,black!20},
+            ybar,
+            ymax=10,
+            bar width=8pt,
+            enlarge x limits={abs=1cm},
+            xtick=data,
+            nodes near coords,
+            every node near coord/.append style={
+                anchor=west,
+                rotate=90
+            },
+        ]
+
+
+        \addplot table[x=command, y=mean] {\realBenchmark};
+        \addplot table[x=command, y=mean] {\realBenchmarkJIT};
+        \addplot table[x=command, y=mean] {\realBenchmarkJITten};
+        \addplot table[x=command, y=mean] {\realBenchmarkJIThundred};
+        \legend{Jit disabled, Constant 1000, Constant 10000, Constant 100000}
+        \end{axis}
+    \end{tikzpicture}
+
+    % \begin{tikzpicture}
+    %     \begin{axis}[
+    %         title={Heavy load benchmark},
+    %         xlabel={Iterations},
+    %         ylabel={Mean Execution Time (s)},
+    %         legend style={at={(0.5,-0.2)},anchor=north},
+    %         grid style={dotted},
+    %         major grid style={dotted,black!50},
+    %         minor grid style={dotted,black!20},
+    %         ymin=-3,
+    %         log ticks with fixed point,
+    %         ]
+
+            
+    %         \pgfplotstableread[col sep=comma]{benchmarks/real.csv}\realBenchmark
+    %         \pgfplotstableread[col sep=comma]{benchmarks/realJIT.csv}\realBenchmarkJIT
+    %         \pgfplotstableread[col sep=comma]{benchmarks/realJIT10k.csv}\realBenchmarkJITten
+    %         \pgfplotstableread[col sep=comma]{benchmarks/realJIT100k.csv}\realBenchmarkJIThundred
+
+    %         \addplot[color=blue,mark=*] table[x=command, y=mean] {\realBenchmark};
+    %         \addplot[color=red,mark=square*,style=dashed] table[x=command, y=mean] {\realBenchmarkJIT};
+    %         \addplot[color=violet,mark=triangle*,style=dotted] table[x=command, y=mean] {\realBenchmarkJITten};
+    %         \addplot[color=green,mark=triangle*,style=loosely dashdotdotted] table[x=command, y=mean] {\realBenchmarkJIThundred};
+    %         \legend{Jit disabled, Constant 1000, Constant 10000, Constant 100000, Constant 250000, Constant 500000, Constant 750000}
+    %     \end{axis}
+    % \end{tikzpicture}
+    \caption{Benchmark: \texttt{JIT\_CONSTANT} benchmark}
+    \label{chart:benchmark-realworld-jit}
+\end{figure}
