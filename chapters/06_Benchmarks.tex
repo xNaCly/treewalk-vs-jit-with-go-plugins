@@ -39,7 +39,7 @@ func b(a)
     *a*a/25*a-12+a/a*a*a*a/25*a-12+a/a*a*a*a/25
     *a-12+a/a*a*a*a/25*a-12+a/a*a*a*a/25*a-12+a/a
     *a*a*a/25*a-12+a/a*a*a*a/25*a-12+a/a*a;
-let s = list(100_000).map(b).sum();
+let s = list(100000).map(b).sum();
 s
     \end{minted}
     \caption{Heavy load arithmetic operations}
@@ -103,7 +103,7 @@ by the JIT-compiler scales at an almost constant rate, see
     \begin{minted}[breaklines]{kotlin}
 func b(a)
     a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a+a;
-let s = list(100_000).map(e->e.string()).map(b).size();
+let s = list(100000).map(e->e.string()).map(b).size();
 s
     \end{minted}
     \caption{Heavy load string concatenating}
@@ -175,7 +175,7 @@ $2.42\textrm{s}$ ($1.431\textrm{x}$).
 
 \begin{listing}[H]
     \begin{minted}[breaklines]{kotlin}
-list(100_000)
+list(100000)
     .filter(e -> e >= 1)
     .map(e -> ((1024*(1024-e))/(e+1024))+(e*e+e*e-e*e+e*e))
     .map(e -> {Key: "Number", Value: e})
@@ -187,6 +187,13 @@ list(100_000)
     \caption{Real world heavy load benchmark}
     \label{code:benchmark-realworld}
 \end{listing}
+
+The reasoning for the smaller performance improvements compared to the previous
+benchmarks is the invocation of methods defined on types by the specific
+language dialect used, such as \texttt{(int).string().len().string()}. The just
+in time compiler does not posses any knowledge of these methods defined on type
+aliases in the language type system and therefore stops the code generation for
+closures and functions containing method calls.
 
 \begin{table}[H]
     \centering
