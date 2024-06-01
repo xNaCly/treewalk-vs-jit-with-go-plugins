@@ -241,51 +241,6 @@ relation between compiling a function too early which could result in degraded
 overall performance or compiling the a function too late, which does not allow
 the JIT to enable its full potential.
 
-
-\begin{table}[H]
-    \centering
-    \begin{tabular}{c|c|c|c|c}
-        Constant & Iterations & Mean Execution Time & $\Delta$ & Improvement \\ 
-        \hline
-        Off         & 100k & 0.18s & 0.00s & 0.000x \\
-                    & 500k & 0.87s & 0.00s & 0.000x \\
-                    & 1mio & 1.68s & 0.00s & 0.000x \\
-                    & 5mio & 8.04s & 0.00s & 0.000x \\
-        \hline
-        1,000       & 100k & 0.18s & 0.00s & 0.000x \\
-                    & 500k & 0.82s & 0.05s & 1.061x \\
-                    & 1mio & 1.36s & 0.32s & 1.240x \\
-                    & 5mio & 5.62s & 2.42s & 1.431x \\
-        \hline
-        10,000      & 100k & 0.18s & 0.00s & 0.000x \\
-                    & 500k & 0.83s & 0.04s & 1.048x \\
-                    & 1mio & 1.36s & 0.32s & 1.240x \\
-                    & 5mio & 5.57s & 2.47s & 1.443x \\
-        \hline
-        100,000     & 100k & 0.18s & 0.00s & 0.000x \\
-                    & 500k & 0.85s & 0.02s & 1.024x \\
-                    & 1mio & 1.42s & 0.26s & 1.183x \\
-                    & 5mio & 5.64s & 2.40s & 1.426x \\
-        \hline
-        250,000     & 100k & 0.00s & 0.00s & 0.000x \\
-                    & 500k & 0.00s & 0.00s & 0.000x \\
-                    & 1mio & 0.00s & 0.00s & 0.000x \\
-                    & 5mio & 0.00s & 0.00s & 0.000x \\
-        \hline
-        500,000     & 100k & 0.00s & 0.00s & 0.000x \\
-                    & 500k & 0.00s & 0.00s & 0.000x \\
-                    & 1mio & 0.00s & 0.00s & 0.000x \\
-                    & 5mio & 0.00s & 0.00s & 0.000x \\
-        \hline
-        750,000     & 100k & 0.00s & 0.00s & 0.000x \\
-                    & 500k & 0.00s & 0.00s & 0.000x \\
-                    & 1mio & 0.00s & 0.00s & 0.000x \\
-                    & 5mio & 0.00s & 0.00s & 0.000x \\
-    \end{tabular}
-    \label{table:benchmark-realworld-jit}
-    \caption{\texttt{JIT\_CONSTANT} benchmark result}
-\end{table}
-
 The benchmark to determine the aforementioned is conducted by executing the
 benchmark representing the real world workload, shown in
 \autoref{code:benchmark-realworld}, with differing values for the
@@ -293,6 +248,61 @@ benchmark representing the real world workload, shown in
 the delta between the runtime with and without the JIT enabled for each
 \texttt{JIT\_CONSTANT} value. \autoref{table:benchmark-realworld-jit} displays
 the results of the measurements while .
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|c|c}
+        Constant & Iterations & Mean Execution Time & $\Delta$ \\ 
+        \hline
+        Off         & 100k & 0.18s & 0.00s \\
+                    & 500k & 0.87s & 0.00s \\
+                    & 1mio & 1.68s & 0.00s \\
+                    & 5mio & 8.04s & 0.00s \\
+        \hline
+        1,000       & 100k & 0.18s & 0.00s \\
+                    & 500k & 0.82s & 0.05s \\
+                    & 1mio & 1.36s & 0.32s \\
+                    & 5mio & 5.62s & 2.42s \\
+        \hline
+        10,000      & 100k & 0.18s & 0.00s \\
+                    & 500k & 0.83s & 0.04s \\
+                    & 1mio & 1.36s & 0.32s \\
+                    & 5mio & 5.57s & 2.47s \\
+        \hline
+        100,000     & 100k & 0.18s & 0.00s \\
+                    & 500k & 0.85s & 0.02s \\
+                    & 1mio & 1.42s & 0.26s \\
+                    & 5mio & 5.64s & 2.40s \\
+        \hline
+        250,000     & 100k & 0.18s & 0.00s \\
+                    & 500k & 0.86s & 0.01s \\
+                    & 1mio & 1.51s & 0.17s \\
+                    & 5mio & 5.79s & 2.25s \\
+        \hline
+        500,000     & 100k & 0.18s & 0.00s \\
+                    & 500k & 0.86s & 0.01s \\
+                    & 1mio & 1.63s & 0.05s \\
+                    & 5mio & 5.93s & 2.11s \\
+    \end{tabular}
+    \label{table:benchmark-realworld-jit}
+    \caption{\texttt{JIT\_CONSTANT} benchmark result}
+\end{table}
+
+\autoref{chart:benchmark-realworld-jit} notates the importance of letting the
+runtime execute functions that aren't executed often for this is underlined by
+the results for $100,000$ function invocations. In this case the runtime is as
+fast as the JIT, therefore the startup cost is not justifiable. 
+
+The first differences in total runtime performance can be observed for
+$500,000$ function calls. The runtime starts to slow down in comparison to the
+JIT results. Smaller \texttt{JIT\_CONSTANT} values result in approximately the
+same values. However, Most of these values are faster than the runtime. 
+
+Signification speed-ups can be identified once the invocation count exceeds the
+one million mark. The results for the \texttt{JIT\_CONSTANT} values $1000$ and
+$10,000$ both enable execution time savings of around $0.32$ seconds or
+$320$ms. All larger values for the \texttt{JIT\_CONSTANT} result in less
+substantial improvements.
 
 \begin{figure}[H]
     \centering
@@ -302,61 +312,58 @@ the results of the measurements while .
         \pgfplotstableread[col sep=comma]{benchmarks/realJIT.csv}\realBenchmarkJIT
         \pgfplotstableread[col sep=comma]{benchmarks/realJIT10k.csv}\realBenchmarkJITten
         \pgfplotstableread[col sep=comma]{benchmarks/realJIT100k.csv}\realBenchmarkJIThundred
+        \pgfplotstableread[col sep=comma]{benchmarks/realJIT250k.csv}\realBenchmarkJITtwohundred
+        \pgfplotstableread[col sep=comma]{benchmarks/realJIT500k.csv}\realBenchmarkJITfivehundred
+
         \begin{axis}[
             title={JIT\_CONSTANT Benchmark},
             xlabel={Iterations},
             ylabel={Mean Execution Time (s)},
-            legend style={at={(0.5,-0.2)},anchor=north},
+            legend style={at={(0.02,0.98)},anchor=north west},
             grid style={dotted},
             major grid style={dotted,black!50},
             minor grid style={dotted,black!20},
             ybar,
             ymax=10,
-            bar width=8pt,
-            enlarge x limits={abs=1cm},
+            width=15cm,
+            bar width=12pt,
+            enlarge x limits={abs=2cm},
             xtick=data,
             nodes near coords,
             every node near coord/.append style={
                 anchor=west,
                 rotate=90
             },
+            xticklabels={100k, 500k, 1mio, 5mio}
         ]
 
 
-        \addplot table[x=command, y=mean] {\realBenchmark};
-        \addplot table[x=command, y=mean] {\realBenchmarkJIT};
-        \addplot table[x=command, y=mean] {\realBenchmarkJITten};
-        \addplot table[x=command, y=mean] {\realBenchmarkJIThundred};
-        \legend{Jit disabled, Constant 1000, Constant 10000, Constant 100000}
+        \addplot table[x expr=\coordindex, y=mean] {\realBenchmark};
+        \addplot table[x expr=\coordindex, y=mean] {\realBenchmarkJIT};
+        \addplot table[x expr=\coordindex, y=mean] {\realBenchmarkJITten};
+        \addplot table[x expr=\coordindex, y=mean] {\realBenchmarkJIThundred};
+        \addplot[color=green!40!black,fill=green!70!black!50] table[x expr=\coordindex, y=mean] {\realBenchmarkJITtwohundred};
+        \addplot[color=red!90!white,fill=red!50!white] table[x expr=\coordindex, y=mean] {\realBenchmarkJITfivehundred};
+        \legend{Jit disabled, Constant 1000, Constant 10000, Constant 100000, Constant 250000, Constant 500000}
         \end{axis}
     \end{tikzpicture}
 
-    % \begin{tikzpicture}
-    %     \begin{axis}[
-    %         title={Heavy load benchmark},
-    %         xlabel={Iterations},
-    %         ylabel={Mean Execution Time (s)},
-    %         legend style={at={(0.5,-0.2)},anchor=north},
-    %         grid style={dotted},
-    %         major grid style={dotted,black!50},
-    %         minor grid style={dotted,black!20},
-    %         ymin=-3,
-    %         log ticks with fixed point,
-    %         ]
-
-            
-    %         \pgfplotstableread[col sep=comma]{benchmarks/real.csv}\realBenchmark
-    %         \pgfplotstableread[col sep=comma]{benchmarks/realJIT.csv}\realBenchmarkJIT
-    %         \pgfplotstableread[col sep=comma]{benchmarks/realJIT10k.csv}\realBenchmarkJITten
-    %         \pgfplotstableread[col sep=comma]{benchmarks/realJIT100k.csv}\realBenchmarkJIThundred
-
-    %         \addplot[color=blue,mark=*] table[x=command, y=mean] {\realBenchmark};
-    %         \addplot[color=red,mark=square*,style=dashed] table[x=command, y=mean] {\realBenchmarkJIT};
-    %         \addplot[color=violet,mark=triangle*,style=dotted] table[x=command, y=mean] {\realBenchmarkJITten};
-    %         \addplot[color=green,mark=triangle*,style=loosely dashdotdotted] table[x=command, y=mean] {\realBenchmarkJIThundred};
-    %         \legend{Jit disabled, Constant 1000, Constant 10000, Constant 100000, Constant 250000, Constant 500000, Constant 750000}
-    %     \end{axis}
-    % \end{tikzpicture}
     \caption{Benchmark: \texttt{JIT\_CONSTANT} benchmark}
     \label{chart:benchmark-realworld-jit}
 \end{figure}
+
+Due to the nature of a JIT compiler it targets code chunks that are executed
+more often, thus justifying the start up and compilation cost. To simulate this
+intent, the last tested iteration count was chosen to be five million
+iterations. This substantiates the previous observations of lower values for
+the \texttt{JIT\_CONSTANT} resulting in larger performance wins. For five
+million operations, all JIT compiled tests resulted in at least a saving of
+$2.11$s or $2110$ms. The largest improvements are surveyed for the
+\texttt{JIT\_CONSTANT} value of $10,000$, compared to the runtime this value
+enabled the improvement of $2.47$s or $2470$ms, resulting in a runtime
+reduction of $30.72\%$ or $1.443$ times faster.
+
+The conclusion of these benchmark is to change the \texttt{JIT\_CONSTANT} from
+its previously set value of $1,000$ to the determined optimal value of
+$10,000$.
+
