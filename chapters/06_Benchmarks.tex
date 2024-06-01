@@ -232,22 +232,23 @@ list(100_000)
 \section{Determining the \texttt{JIT\_CONSTANT}}
 \label{sec:jit-constant-discussion}
 
-The jit constant, introduced in \autoref{sec:meta-tracing-jit-constant}, is
-used to establish a optimal relation between the possible performance
-improvements and the negative performance impact of invoking the compilation a
-function. Therefore the threshold acts as the criteria for categorizing a given
-function as a compilation target for the jit compiler. To find the optimal
-relation between compiling a function too early which could result in degraded
-overall performance or compiling the a function too late, which does not allow
-the JIT to enable its full potential.
+The \texttt{JIT\_CONSTANT}, introduced in
+\autoref{sec:meta-tracing-jit-constant}, is used to establish a optimal
+relation between the possible performance improvements and the negative
+performance impact of invokation of the compilation of a function. Therefore
+the threshold acts as the criteria for categorizing a given function as a
+compilation target for the jit compiler. To find the optimal relation between
+compiling a function too early which could result in degraded overall
+performance or compiling a function too late, which limits the JIT from
+achiving its full potential.
 
-The benchmark to determine the aforementioned is conducted by executing the
-benchmark representing the real world workload, shown in
-\autoref{code:benchmark-realworld}, with differing values for the
-\texttt{JIT\_CONSTANT}, ranging from a thousand to one million and recording
-the delta between the runtime with and without the JIT enabled for each
-\texttt{JIT\_CONSTANT} value. \autoref{table:benchmark-realworld-jit} displays
-the results of the measurements while .
+The benchmark to determine the aforementioned value is conducted by executing
+the benchmark representing the real world workload, shown in
+\autoref{code:benchmark-realworld}, with differing values ranging from a
+thousand to $500,000$ and recording the delta between the runtime with and
+without the JIT enabled for each \texttt{JIT\_CONSTANT} value.
+\autoref{table:benchmark-realworld-jit} displays the results of the
+measurements.
 
 \begin{table}[H]
     \centering
@@ -289,9 +290,9 @@ the results of the measurements while .
 \end{table}
 
 \autoref{chart:benchmark-realworld-jit} notates the importance of letting the
-runtime execute functions that aren't executed often for this is underlined by
-the results for $100,000$ function invocations. In this case the runtime is as
-fast as the JIT, therefore the startup cost is not justifiable. 
+runtime execute functions that aren't executed often. This is underlined by the
+results of $100,000$ function invocations. In this case the runtime is as fast
+as the JIT, therefore the startup cost is not justifiable. 
 
 The first differences in total runtime performance can be observed for
 $500,000$ function calls. The runtime starts to slow down in comparison to the
@@ -352,16 +353,17 @@ substantial improvements.
     \label{chart:benchmark-realworld-jit}
 \end{figure}
 
-Due to the nature of a JIT compiler it targets code chunks that are executed
-more often, thus justifying the start up and compilation cost. To simulate this
-intent, the last tested iteration count was chosen to be five million
-iterations. This substantiates the previous observations of lower values for
-the \texttt{JIT\_CONSTANT} resulting in larger performance wins. For five
-million operations, all JIT compiled tests resulted in at least a saving of
-$2.11$s or $2110$ms. The largest improvements are surveyed for the
-\texttt{JIT\_CONSTANT} value of $10,000$, compared to the runtime this value
-enabled the improvement of $2.47$s or $2470$ms, resulting in a runtime
-reduction of $30.72\%$ or $1.443$ times faster.
+Due to the nature of a JIT compiler, it targets code chunks that are executed
+more often. Therefore justifying the start up of the just in time compilation
+and the compilation cost of a function. To test this intent, the last measured
+iteration count was chosen to be five million iterations. This substantiates
+the previous observations of lower values for the \texttt{JIT\_CONSTANT}
+resulting in larger performance wins. For five million operations, all JIT
+compiled tests resulted in at least a saving of $2.11$s or $2110$ms. The
+largest improvements are surveyed for the \texttt{JIT\_CONSTANT} value of
+$10,000$. Compared to the runtime this value enabled the improvement of $2.47$s
+or $2470$ms, resulting in a runtime reduction of $30.72\%$ or reducing the time
+taken to execute the function five million times $1.443$ times.
 
 The conclusion of these benchmark is to change the \texttt{JIT\_CONSTANT} from
 its previously set value of $1,000$ to the determined optimal value of
