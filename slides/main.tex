@@ -1,0 +1,73 @@
+\documentclass{beamer}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{minted}
+\usemintedstyle{perldoc}
+\setcounter{tocdepth}{1}
+
+\title{Comparing a Tree-walk Interpreter with JIT compilation and embedding via Go-plugins}
+\subtitle{Evaluating the trade-offs of using the Go-plugin API for JIT compilation while comparing the approach with a Tree-walk interpreter}
+\date[2024]{2024}
+\author{9525469} 
+
+\institute[DHBW]{DHBW}
+
+\date{\today}
+
+\usetheme{metropolis}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{section in toc}[sections numbered]
+
+\begin{document}
+    
+    \frame{\titlepage}
+
+    \begin{frame}
+        \frametitle{Interpreted Programming Language Performance}
+
+        Common Interpreter design approaches
+
+        \begin{itemize}
+            \item AST walker (naive)
+            \item Byte code compiler and virtual machine
+        \end{itemize}
+
+        Just In Time Compilation
+        \begin{itemize}
+            \item translating selected byte code or ast nodes to machine code
+            \item execute machine code instead of interpreting chunk
+        \end{itemize}
+    \end{frame}
+
+     \begin{frame}
+        \frametitle{Performance Improvements}
+
+        With Just in Time Compilation
+        \begin{itemize}
+            \item math: $14.51$x improvement (from $13.64$s to $0.94$s)
+            \item string concat: $4.59$x improvement (from $14.17$s to $3.09$s)
+            \item real world: $1.43$x improvement (from $8.04$s to $5.62$s)
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Conclusion}
+
+        \begin{itemize}
+            \item implemented JIT for subset of language
+            \item measured performance improvements
+            \item evaluated the usability of the plugin api
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Gophers}
+        \begin{figure}
+            \includegraphics[scale=8]{./gopher.jpg}
+            \caption{Quelle: \texttt{https://go.dev/blog/gopher}}
+        \end{figure}
+    \end{frame}
+\end{document}
